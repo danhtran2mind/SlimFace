@@ -1,4 +1,4 @@
-# slim-face-recognition
+# NanoFace: a Slim Face Recognition
 
 ## Project Description
 
