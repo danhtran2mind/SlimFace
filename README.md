@@ -22,14 +22,47 @@
 ## Usage
 ### Clone Repositories
 ```bash
+# Clone the repository
 git clone https://github.com/danhtran2mind/slim-face-recognition
-cd slim-face-recognition
-git clone https://github.com/danhtran2mind/edgeface
+# Clone the edgeface model repository
+git clone https://github.com/danhtran2mind/edgeface src/slim_face/models
 ```
 ### Install Dependencies
+```bash
+sudo apt update
+sudo apt install -y libglib2.0-0
+sudo apt install -y libgl1-mesa-dev
+```
 
 ```bash
 pip install -r requirements.txt
+```
+
+
+## Data Preparation
+
+## Pre-trained Model preparation
+```bash
+python scripts/copy_ckpts.py
+```
+```bash
+python scripts/download_example_kaggle_dataset.py
+```
+## Training
+<!-- ```bash
+cd src/slim_face
+``` -->
+### Normal Training
+```bash
+python src/slim_face/training/train.py
+```
+### Accelerate Training
+```bash
+accelarate config default
+```
+
+```bash
+accelarate src/slim_face/training/accelerate_train.py
 ```
 
 ## Project Description

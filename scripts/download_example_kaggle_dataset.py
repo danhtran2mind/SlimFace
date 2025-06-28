@@ -1,14 +1,16 @@
 import os
-import requests
 import zipfile
-import shutil
-from sklearn.model_selection import train_test_split
+import requests
 from tqdm import tqdm
-from PIL import Image
-import numpy as np
+from sklearn.model_selection import train_test_split
 import imgaug.augmenters as iaa
+import sys
 
-def download_and_split_kaggle_dataset(dataset_slug, base_dir="dataset", img_size=(224, 224), augment=False):
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from data_processing import process_image
+
+def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(224, 224), augment=False):
     """
     Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
 
@@ -96,40 +98,6 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="dataset", img_size
 
     except Exception as e:
         print(f"Error processing dataset: {e}")
-
-def process_image(src_path, dest_dir, img_size, aug=None):
-    """
-    Process an image by resizing, normalizing, and optionally augmenting it.
-
-    Args:
-        src_path (str): Path to the source image
-        dest_dir (str): Destination directory for the processed image
-        img_size (tuple): Target image size (width, height)
-        aug (iaa.Sequential, optional): Augmentation pipeline
-    """
-    try:
-        # Open and process image
-        img = Image.open(src_path).convert('RGB')
-        img = img.resize(img_size, Image.Resampling.LANCZOS)
-        
-        # Convert to numpy array and normalize
-        img_array = np.array(img) / 255.0
-        
-        # Apply augmentation if specified
-        if aug:
-            img_array = aug.augment_image(img_array)
-        
-        # Clip values to ensure valid range after augmentation
-        img_array = np.clip(img_array, 0, 1)
-        
-        # Convert back to image
-        img = Image.fromarray((img_array * 255).astype(np.uint8))
-        
-        # Save processed image
-        dest_path = os.path.join(dest_dir, os.path.basename(src_path))
-        img.save(dest_path, quality=95)
-    except Exception as e:
-        print(f"Error processing image {src_path}: {e}")
 
 # Example usage
 if __name__ == "__main__":

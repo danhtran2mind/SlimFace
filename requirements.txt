@@ -8,3 +8,7 @@ pytorch-lightning>=2.5.1
 tqdm
 imgaug
 accelerate>=1.6.0
+scikit-learn
+pillow
+zipfile
+requests

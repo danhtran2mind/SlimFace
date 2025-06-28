@@ -8,3 +8,7 @@ pillow==11.2.1
 pytorch-lightning==2.5.1
 accelerate==1.6.0
 imgaug==0.4.0
+scikit-learn==1.6.1
+pillow==11.2.1
+zipfile
+requests==2.32.4
