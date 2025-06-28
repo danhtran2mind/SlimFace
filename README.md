@@ -19,7 +19,18 @@
 >   year={2024}
 > }
 > ```
+## Usage
+### Clone Repositories
+```bash
+git clone https://github.com/danhtran2mind/slim-face-recognition
+cd slim-face-recognition
+git clone https://github.com/danhtran2mind/edgeface
+```
+### Install Dependencies
 
+```bash
+pip install -r requirements.txt
+```
 
 ## Project Description
 
