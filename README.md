@@ -23,7 +23,7 @@
 ### Clone Repositories
 ```bash
 # Clone the repository
-git clone https://github.com/danhtran2mind/slim-face-recognition
+git clone https://github.com/danhtran2mind/slim-face
 # Clone the edgeface model repository
 git clone https://github.com/danhtran2mind/edgeface src/slim_face/models/edgeface
 ```
