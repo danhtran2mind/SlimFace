@@ -11,10 +11,11 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# from ..models.edgeface.face_alignment import align
 
-from edgeface.face_alignment import align
-from edgeface.backbones import get_model
+from models.edgeface.face_alignment import align
+from models.edgeface.backbones import get_model
 
 # Custom Dataset class for loading face images
 class FaceDataset(Dataset):
@@ -131,8 +132,8 @@ def main(args):
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=4)
 
     # Load base model
-    base_model = get_model(args.model_name)
-    checkpoint_path = f'./edgeface/checkpoints/{args.model_name}.pt'
+    base_model= get_model(os.path.basename(args.edgeface_model_path).split(".")[0])
+    checkpoint_path = args.edgeface_model_path
     base_model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
     base_model.eval()
 
@@ -170,8 +171,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
     parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds',
                         help='Path to the dataset directory.')
-    parser.add_argument('--model_name', type=str, default='edgeface_s_gamma_05',
-                        help='Name of the base EdgeFace model.')
+    parser.add_argument('--edgeface_model_path', type=str, default='ckpts/edgeface_ckpts/edgeface_s_gamma_05.pt',
+                        help='Path of the EdgeFace model.')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='Batch size for training and validation.')
     parser.add_argument('--embedding_dim', type=int, default=512,

@@ -10,5 +10,4 @@ imgaug
 accelerate>=1.6.0
 scikit-learn
 pillow
-zipfile
 requests

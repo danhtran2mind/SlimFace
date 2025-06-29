@@ -2,7 +2,7 @@
 
 > ## Credits and Citation
 >
-> ℹ️ This project is based on the [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), and includes our own bug fixes and enhancements.
+> ℹ️ This project is based on the [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), and includes our own bug fixes and enhancements.
 >
 > If this project is helpful for your research, please consider citing the original paper:
 >
@@ -25,9 +25,10 @@
 # Clone the repository
 git clone https://github.com/danhtran2mind/slim-face-recognition
 # Clone the edgeface model repository
-git clone https://github.com/danhtran2mind/edgeface src/slim_face/models
+git clone https://github.com/danhtran2mind/edgeface src/slim_face/models/edgeface
 ```
 ### Install Dependencies
+**If cv2 does not work, run below CLI**
 ```bash
 sudo apt update
 sudo apt install -y libglib2.0-0
@@ -58,11 +59,11 @@ python src/slim_face/training/train.py
 ```
 ### Accelerate Training
 ```bash
-accelarate config default
+accelerate config default
 ```
 
 ```bash
-accelarate src/slim_face/training/accelerate_train.py
+accelerate launch src/slim_face/training/accelerate_train.py
 ```
 
 ## Project Description
