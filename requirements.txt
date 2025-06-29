@@ -11,3 +11,4 @@ accelerate>=1.6.0
 scikit-learn
 pillow
 requests
+ultralytics
