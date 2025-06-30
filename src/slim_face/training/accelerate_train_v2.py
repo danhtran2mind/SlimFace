@@ -11,9 +11,11 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models.edgeface.face_alignment import align
-from models.edgeface.backbones import get_model
+# Add the 'src/slim_face/models/edgeface' directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
+
+from face_alignment import align  # Updated import to reflect the correct module path
+from backbones import get_model  # Updated import to reflect the correct module path
 
 # Custom Dataset class for loading face images
 class FaceDataset(Dataset):
