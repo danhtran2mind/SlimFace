@@ -372,7 +372,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
-    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds sensiveloss:.2f}',
+    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds}',
                         help='Path to the dataset directory.')
     parser.add_argument('--edgeface_model_path', type=str, default='ckpts/edgeface_ckpts/edgeface_s_gamma_05.pt',
                         help='Path of the EdgeFace model.')
