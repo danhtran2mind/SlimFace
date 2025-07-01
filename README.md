@@ -50,7 +50,7 @@ pip install -r requirements.txt
 python scripts/copy_ckpts.py
 ```
 ```bash
-python scripts/download_example_kaggle_dataset.py
+python scripts/process_kaggle_face_recognition_dataset.py
 ```
 ## Training
 <!-- ```bash
