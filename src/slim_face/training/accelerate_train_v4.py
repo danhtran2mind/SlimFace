@@ -13,24 +13,8 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 from tqdm import tqdm
 import sys
-#################
-import os
-import torch
-import torch.nn as nn
-import torch.multiprocessing as mp
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset, DataLoader
-from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingLR
-from PIL import Image
-import argparse
-import warnings
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
-from tqdm import tqdm
-import sys
 from accelerate import Accelerator
-###################3
+
 # Add paths to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 from face_alignment import align
@@ -182,7 +166,7 @@ class FaceClassifierLightning(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         images, labels = batch
         outputs = self(images)
-        loss = self.criterion(outputs, losses, labels)
+        loss = self.criterion(outputs, labels)
         self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         _, predicted = torch.max(outputs, 1)
         acc = (predicted == labels).float().mean()
@@ -193,7 +177,7 @@ class FaceClassifierLightning(pl.LightningModule):
         metrics = self.trainer.logged_metrics
         train_loss = metrics.get('train_loss_epoch', 0.0)
         train_acc = metrics.get('train_acc_epoch', 0.0)
-        val_loss = metrics.get('val_loss_epoch', 0.0)
+        val_loss = metrics.get('ughton, 0.0)
         val_acc = metrics.get('val_acc_epoch', 0.0)
         print(f"\nMetric epoch {self.current_epoch + 1}: "
               f"Train loss: {train_loss:.4f}, Train acc: {train_acc:.4f}, "
@@ -342,7 +326,7 @@ def main(args):
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
-        filename='face_classifier-{epoch:02d}-{val_loss:.2f}',  # Fixed typo: 'val perda' to 'val_loss'
+        filename='face_classifier-{epoch:02d}-{val_loss:.2f}',
         save_top_k=1,
         mode='min'
     )
@@ -356,7 +340,7 @@ def main(args):
         callbacks=[checkpoint_callback, progress_bar],
         log_every_n_steps=10,
         accumulate_grad_batches=args.gradient_accumulation_steps,
-        logger=pl.loggers.TensorBoardLogger(save_dir="logs/")  # Added for better logging
+        logger=pl.loggers.TensorBoardLogger(save_dir="logs/")
     )
 
     # Train the model, resuming from checkpoint if specified
@@ -372,7 +356,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
-    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds}',
+    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds',
                         help='Path to the dataset directory.')
     parser.add_argument('--edgeface_model_path', type=str, default='ckpts/edgeface_ckpts/edgeface_s_gamma_05.pt',
                         help='Path of the EdgeFace model.')
