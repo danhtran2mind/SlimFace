@@ -1,49 +1,94 @@
+import os
 import torch
 import torch.nn as nn
-import torch.multiprocessing as mp  # Import torch.multiprocessing
+import torch.multiprocessing as mp
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
-import os
 import argparse
 import warnings
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
-# import time
 import sys
 
-# Add the 'src/slim_face/models/edgeface' directory to sys.path
+# Add paths to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
+from face_alignment import align
+from backbones import get_model
 
-from face_alignment import align  # Updated import to reflect the correct module path
-from backbones import get_model  # Updated import to reflect the correct module path
+def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
+    """
+    Preprocess images using YOLO-based face alignment and save aligned images to a cache directory.
+    
+    Args:
+        input_dir (str): Path to the input dataset directory.
+        output_dir (str): Path to the output directory for cached aligned images.
+        algorithm (str): Face detection algorithm ('yolo' or 'mtcnn').
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=FutureWarning, message=".*rcond.*")
+        for person in sorted(os.listdir(input_dir)):
+            person_path = os.path.join(input_dir, person)
+            if not os.path.isdir(person_path):
+                continue
+            
+            output_person_path = os.path.join(output_dir, person)
+            os.makedirs(output_person_path, exist_ok=True)
+            
+            for img_name in os.listdir(person_path):
+                if not img_name.endswith(('.jpg', '.jpeg', '.png')):
+                    continue
+                    
+                img_path = os.path.join(person_path, img_name)
+                output_img_path = os.path.join(output_person_path, img_name)
+                
+                if os.path.exists(output_img_path):
+                    print(f"Skipping {img_path}: Already processed")
+                    continue
+                
+                try:
+                    aligned_result = align.get_aligned_face([img_path], algorithm=algorithm)
+                    aligned_image = aligned_result[0][1] if aligned_result and len(aligned_result) > 0 else None
+                    if aligned_image is None:
+                        print(f"Face detection failed for {img_path}, using resized original image")
+                        aligned_image = Image.open(img_path).convert('RGB')
+                    aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
+                    aligned_image.save(output_img_path, quality=95)
+                    print(f"Saved aligned image to {output_img_path}")
+                except Exception as e:
+                    print(f"Error processing {img_path}: {e}")
+                    aligned_image = Image.open(img_path).convert('RGB')
+                    aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
+                    aligned_image.save(output_img_path, quality=95)
+                    print(f"Saved fallback image to {output_img_path}")
 
-# Add the 'src/slim_face/models/edgeface' directory to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "..", "..")))
-
-# Custom Dataset class for loading face images
 class FaceDataset(Dataset):
-    def __init__(self, root_dir, transform=None,
-                 algorithm='yolo', skip_alignment=False):
+    def __init__(self, root_dir, transform=None):
+        """
+        Initialize the dataset to load pre-aligned images.
+        
+        Args:
+            root_dir (str): Path to the directory containing pre-aligned images.
+            transform: Optional transform to be applied to images.
+        """
         self.root_dir = root_dir
         self.transform = transform
-        self.algorithm = algorithm
-        self.skip_alignment = skip_alignment  # Flag to skip face alignment
         self.image_paths = []
         self.labels = []
         self.class_to_idx = {}
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=FutureWarning, message=".*rcond.*")
-            for idx, person in enumerate(sorted(os.listdir(root_dir))):
-                person_path = os.path.join(root_dir, person)
-                if os.path.isdir(person_path):
-                    self.class_to_idx[person] = idx
-                    for img_name in os.listdir(person_path):
-                        if img_name.endswith(('.jpg', '.jpeg', '.png')):
-                            self.image_paths.append(os.path.join(person_path, img_name))
-                            self.labels.append(idx)
+        for idx, person in enumerate(sorted(os.listdir(root_dir))):
+            person_path = os.path.join(root_dir, person)
+            if os.path.isdir(person_path):
+                self.class_to_idx[person] = idx
+                for img_name in os.listdir(person_path):
+                    if img_name.endswith(('.jpg', '.jpeg', '.png')):
+                        self.image_paths.append(os.path.join(person_path, img_name))
+                        self.labels.append(idx)
 
     def __len__(self):
         return len(self.image_paths)
@@ -52,33 +97,17 @@ class FaceDataset(Dataset):
         img_path = self.image_paths[idx]
         label = self.labels[idx]
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=FutureWarning, message=".*rcond.*")
-            try:
-                if self.skip_alignment:
-                    aligned_image = Image.open(img_path).convert('RGB')
-                    aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
-                else:
-                    # start_time = time.time()
-                    aligned_result = align.get_aligned_face([img_path], algorithm=self.algorithm)
-                    # print(f"Face alignment ({self.algorithm}) took {time.time() - start_time:.3f} seconds for {img_path}")
-                    aligned_image = aligned_result[0][1] if aligned_result and len(aligned_result) > 0 else None
-                    if aligned_image is None:
-                        print(f"Face detection failed for {img_path}, using resized original image")
-                        aligned_image = Image.open(img_path).convert('RGB')
-                        aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
-                    else:
-                        aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
-            except Exception as e:
-                print(f"Error processing {img_path}: {e}")
-                aligned_image = Image.new('RGB', (224, 224))
+        try:
+            image = Image.open(img_path).convert('RGB')
+        except Exception as e:
+            print(f"Error loading {img_path}: {e}")
+            image = Image.new('RGB', (224, 224))
 
         if self.transform:
-            aligned_image = self.transform(aligned_image)
+            image = self.transform(image)
 
-        return aligned_image, label
+        return image, label
 
-# Define the classification model
 class FaceClassifier(nn.Module):
     def __init__(self, base_model, embedding_dim, num_classes):
         super(FaceClassifier, self).__init__()
@@ -95,7 +124,6 @@ class FaceClassifier(nn.Module):
         output = self.fc(embedding)
         return output
 
-# PyTorch Lightning module for training
 class FaceClassifierLightning(pl.LightningModule):
     def __init__(self, base_model, embedding_dim, num_classes, learning_rate):
         super(FaceClassifierLightning, self).__init__()
@@ -129,17 +157,32 @@ class FaceClassifierLightning(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
         return optimizer
-        
-# Define Custom Model Checkpoint Class
+
 class CustomModelCheckpoint(ModelCheckpoint):
     def format_checkpoint_name(self, metrics, ver=None):
-        # Adjust epoch to start from 1 in the filename
         metrics['epoch'] = metrics.get('epoch', 0) + 1
         return super().format_checkpoint_name(metrics, ver)
 
 def main(args):
-    # Set multiprocessing start method to 'spawn'
     mp.set_start_method('spawn', force=True)
+
+    # Define paths for cached datasets
+    train_cache_dir = os.path.join(args.dataset_dir, "train_data_aligned")
+    val_cache_dir = os.path.join(args.dataset_dir, "val_data_aligned")
+
+    # Preprocess and cache aligned images
+    print("Preprocessing training dataset...")
+    preprocess_and_cache_images(
+        input_dir=os.path.join(args.dataset_dir, "train_data"),
+        output_dir=train_cache_dir,
+        algorithm=args.algorithm
+    )
+    print("Preprocessing validation dataset...")
+    preprocess_and_cache_images(
+        input_dir=os.path.join(args.dataset_dir, "val_data"),
+        output_dir=val_cache_dir,
+        algorithm=args.algorithm
+    )
 
     # Define transforms
     transform = transforms.Compose([
@@ -147,19 +190,19 @@ def main(args):
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
 
-    # Load datasets
-    train_dataset = FaceDataset(root_dir=os.path.join(args.dataset_dir, "train_data"), transform=transform, algorithm=args.algorithm)
-    val_dataset = FaceDataset(root_dir=os.path.join(args.dataset_dir, "val_data"), transform=transform, algorithm=args.algorithm, skip_alignment=True)
+    # Load datasets from cached aligned images
+    train_dataset = FaceDataset(root_dir=train_cache_dir, transform=transform)
+    val_dataset = FaceDataset(root_dir=val_cache_dir, transform=transform)
 
-    # Initialize DataLoaders with persistent_workers=True for training
+    # Initialize DataLoaders
     train_loader = DataLoader(
-        train_dataset,
+        train_dataset,  # Fixed: Corrected from incomplete 'train'
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True,
         num_workers=2,
         pin_memory=True,
-        persistent_workers=True  # Enable persistent workers for training
+        persistent_workers=True
     )
     val_loader = DataLoader(
         val_dataset,
@@ -168,7 +211,7 @@ def main(args):
         drop_last=True,
         num_workers=2,
         pin_memory=True,
-        persistent_workers=True  # Optional: Enable for validation as well
+        persistent_workers=True
     )
 
     # Load base model
@@ -202,8 +245,7 @@ def main(args):
         accelerator=args.accelerator,
         devices=args.devices,
         callbacks=[checkpoint_callback, progress_bar],
-        log_every_n_steps=10,
-        # num_sanity_val_steps=2  # Limit sanity check batches
+        log_every_n_steps=10
     )
 
     # Train the model
