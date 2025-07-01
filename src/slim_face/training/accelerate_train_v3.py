@@ -170,8 +170,8 @@ class FaceClassifierLightning(pl.LightningModule):
         val_acc = metrics.get('val_acc_epoch', 0.0)
         # Print consolidated metrics for the epoch
         print(f"Epoch {self.current_epoch + 1}: "
-              f"train_loss={train_loss:.4f}, train_acc={train_acc:.4f}, "
-              f"val_loss={val_loss:.4f}, val_acc={val_acc:.4f}")
+              f"train loss: {train_loss:.4f}, train acc: {train_acc:.4f}, "
+              f"val loss: {val_loss:.4f}, val acc: {val_acc:.4f}")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
