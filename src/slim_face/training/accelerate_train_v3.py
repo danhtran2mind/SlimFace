@@ -169,9 +169,9 @@ class FaceClassifierLightning(pl.LightningModule):
         val_loss = metrics.get('val_loss_epoch', 0.0)
         val_acc = metrics.get('val_acc_epoch', 0.0)
         # Print consolidated metrics for the epoch
-        print(f"\nEpoch {self.current_epoch + 1}: "
-              f"train loss: {train_loss:.4f}, train acc: {train_acc:.4f}, "
-              f"val loss: {val_loss:.4f}, val acc: {val_acc:.4f}")
+        print(f"\nMetric epoch {self.current_epoch + 1}: "
+              f"Train loss: {train_loss:.4f}, Train acc: {train_acc:.4f}, "
+              f"Val loss: {val_loss:.4f}, Val acc: {val_acc:.4f}")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
@@ -181,6 +181,15 @@ class CustomModelCheckpoint(ModelCheckpoint):
     def format_checkpoint_name(self, metrics, ver=None):
         metrics['epoch'] = metrics.get('epoch', 0) + 1
         return super().format_checkpoint_name(metrics, ver)
+        
+# Custom progress bar to display epoch starting from 1
+class CustomTQDMProgressBar(TQDMProgressBar):
+    def get_metrics(self, trainer, pl_module):
+        # Get default metrics from parent class
+        items = super().get_metrics(trainer, pl_module)
+        # Increment epoch number by 1 for display (trainer.current_epoch is 0-based)
+        items["epoch"] = trainer.current_epoch + 1
+        return items
 
 def main(args):
     mp.set_start_method('spawn', force=True)
@@ -256,7 +265,7 @@ def main(args):
         save_top_k=1,
         mode='min'
     )
-    progress_bar = TQDMProgressBar()
+    progress_bar = CustomTQDMProgressBar()
 
     # Initialize Trainer
     trainer = Trainer(
