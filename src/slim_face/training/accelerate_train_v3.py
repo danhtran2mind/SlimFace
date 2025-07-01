@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.multiprocessing as mp  # Import torch.multiprocessing
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
@@ -9,7 +10,7 @@ import warnings
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
-import time
+# import time
 import sys
 
 # Add the 'src/slim_face/models/edgeface' directory to sys.path
@@ -58,9 +59,9 @@ class FaceDataset(Dataset):
                     aligned_image = Image.open(img_path).convert('RGB')
                     aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
                 else:
-                    start_time = time.time()
+                    # start_time = time.time()
                     aligned_result = align.get_aligned_face([img_path], algorithm=self.algorithm)
-                    print(f"Face alignment ({self.algorithm}) took {time.time() - start_time:.3f} seconds for {img_path}")
+                    # print(f"Face alignment ({self.algorithm}) took {time.time() - start_time:.3f} seconds for {img_path}")
                     aligned_image = aligned_result[0][1] if aligned_result and len(aligned_result) > 0 else None
                     if aligned_image is None:
                         print(f"Face detection failed for {img_path}, using resized original image")
@@ -128,8 +129,17 @@ class FaceClassifierLightning(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
         return optimizer
+# Define Custom Model Checkpoint Class
+class CustomModelCheckpoint(ModelCheckpoint):
+    def format_checkpoint_name(self, metrics, ver=None):
+        # Adjust epoch to start from 1 in the filename
+        metrics['epoch'] = metrics.get('epoch', 0) + 1
+        return super().format_checkpoint_name(metrics, ver)
 
 def main(args):
+    # Set multiprocessing start method to 'spawn'
+    mp.set_start_method('spawn', force=True)
+
     # Define transforms
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -140,8 +150,25 @@ def main(args):
     train_dataset = FaceDataset(root_dir=os.path.join(args.dataset_dir, "train_data"), transform=transform, algorithm=args.algorithm)
     val_dataset = FaceDataset(root_dir=os.path.join(args.dataset_dir, "val_data"), transform=transform, algorithm=args.algorithm, skip_alignment=True)
 
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True, num_workers=2, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=2, pin_memory=True)
+    # Initialize DataLoaders with persistent_workers=True for training
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True,
+        num_workers=2,
+        pin_memory=True,
+        persistent_workers=True  # Enable persistent workers for training
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=args.batch_size,
+        shuffle=False,
+        drop_last=True,
+        num_workers=2,
+        pin_memory=True,
+        persistent_workers=True  # Optional: Enable for validation as well
+    )
 
     # Load base model
     model_name = os.path.basename(args.edgeface_model_path).split(".")[0]
@@ -159,7 +186,7 @@ def main(args):
     )
 
     # Define callbacks
-    checkpoint_callback = ModelCheckpoint(
+    checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
         filename='face_classifier-{epoch:02d}-{val_loss:.2f}',
@@ -175,7 +202,7 @@ def main(args):
         devices=args.devices,
         callbacks=[checkpoint_callback, progress_bar],
         log_every_n_steps=10,
-        num_sanity_val_steps=2  # Limit sanity check batches
+        # num_sanity_val_steps=2  # Limit sanity check batches
     )
 
     # Train the model
