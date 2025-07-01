@@ -34,7 +34,9 @@ sudo apt update
 sudo apt install -y libglib2.0-0
 sudo apt install -y libgl1-mesa-dev
 ```
-
+```bash
+cd slim-face
+```
 ```bash
 pip install -r requirements.txt
 ```
