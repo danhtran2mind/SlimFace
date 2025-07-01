@@ -25,6 +25,7 @@
 # Clone the repository
 git clone https://github.com/danhtran2mind/slim-face
 
+# Navigate into the newly created 'slim-face' directory.
 cd slim-face
 
 # Clone the edgeface model repository
