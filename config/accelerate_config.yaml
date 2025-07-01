@@ -1,6 +1,0 @@
-compute_environment: LOCAL_MACHINE
-distributed_type: FSDP
-num_processes: 4
-mixed_precision: fp16
-fsdp_config:
-  fsdp_offload_params: true
