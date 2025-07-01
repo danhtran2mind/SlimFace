@@ -10,14 +10,13 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from data_processing import process_image
 
-def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(224, 224), augment=False):
+def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=False):
     """
     Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
 
     Args:
         dataset_slug (str): Dataset slug in 'username/dataset-name' format
         base_dir (str): Base directory for storing dataset
-        img_size (tuple): Target image size (width, height) for resizing
         augment (bool): Whether to apply data augmentation
     """
     try:
@@ -91,10 +90,10 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(2
                 train_images, val_images = train_test_split(images, test_size=0.2, random_state=42)
 
                 for img in train_images:
-                    process_image(os.path.join(source_dir, person, img), train_person_dir, img_size, aug)
+                    process_image(os.path.join(source_dir, person, img), train_person_dir, aug)
                     pbar.update(1)
                 for img in val_images:
-                    process_image(os.path.join(source_dir, person, img), val_person_dir, img_size, None)  # No augmentation for validation
+                    process_image(os.path.join(source_dir, person, img), val_person_dir, None)  # No augmentation for validation
                     pbar.update(1)
 
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
@@ -105,4 +104,4 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(2
 # Example usage
 if __name__ == "__main__":
     dataset_slug = "vasukipatel/face-recognition-dataset"
-    download_and_split_kaggle_dataset(dataset_slug, img_size=(224, 224), augment=True)
+    download_and_split_kaggle_dataset(dataset_slug, augment=True)
