@@ -129,6 +129,7 @@ class FaceClassifierLightning(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
         return optimizer
+        
 # Define Custom Model Checkpoint Class
 class CustomModelCheckpoint(ModelCheckpoint):
     def format_checkpoint_name(self, metrics, ver=None):
