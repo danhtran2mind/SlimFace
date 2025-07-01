@@ -3,20 +3,18 @@ import numpy as np
 import os
 import imgaug.augmenters as iaa
 
-def process_image(src_path, dest_dir, img_size, aug=None):
+def process_image(src_path, dest_dir, aug=None):
     """
     Process an image by resizing, normalizing, and optionally augmenting it.
 
     Args:
         src_path (str): Path to the source image
         dest_dir (str): Destination directory for the processed image
-        img_size (tuple): Target image size (width, height)
         aug (iaa.Sequential, optional): Augmentation pipeline
     """
     try:
         # Open and process image
         img = Image.open(src_path).convert('RGB')
-        # img = img.resize(img_size, Image.Resampling.LANCZOS)
         
         # Convert to numpy array and normalize
         img_array = np.array(img) / 255.0
