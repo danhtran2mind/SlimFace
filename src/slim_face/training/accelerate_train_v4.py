@@ -280,7 +280,10 @@ def main(args):
     model_name = os.path.basename(args.edgeface_model_path).split(".")[0]
     base_model = get_model(model_name)
     checkpoint_path = args.edgeface_model_path
-    base_model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
+    try:
+        base_model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
+    except Exception as e:
+        raise RuntimeError(f"Failed to load EdgeFace model weights from {checkpoint_path}: {e}")
     base_model.eval()
 
     # Determine pretrained checkpoint path
@@ -290,6 +293,9 @@ def main(args):
         if checkpoint_files:
             pretrained_checkpoint = os.path.join(args.pretrain_model_dir, checkpoint_files[0])
             print(f"Found pretrained checkpoint: {pretrained_checkpoint}")
+            # Validate checkpoint file
+            if not os.path.isfile(pretrained_checkpoint):
+                raise FileNotFoundError(f"Checkpoint file {pretrained_checkpoint} does not exist.")
         else:
             print(f"No checkpoint files found in {args.pretrain_model_dir}. Proceeding without pretrained weights.")
 
@@ -308,7 +314,7 @@ def main(args):
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
-        filename='face_classifier-{epoch:02d}-{val_loss:.2f}',
+        filename='face_classifier-{epoch:02d}-{val perda:.2f}',
         save_top_k=1,
         mode='min'
     )
@@ -321,12 +327,19 @@ def main(args):
         devices=args.devices,
         callbacks=[checkpoint_callback, progress_bar],
         log_every_n_steps=10,
-        accumulate_grad_batches=args.gradient_accumulation_steps,
-        resume_from_checkpoint=pretrained_checkpoint if args.resume_training and pretrained_checkpoint else None
+        accumulate_grad_batches=args.gradient_accumulation_steps
     )
 
-    # Train the model
-    trainer.fit(model, train_loader, val_loader)
+    # Train the model, resuming from checkpoint if specified
+    try:
+        trainer.fit(
+            model,
+            train_dataloaders=train_loader,
+            val_dataloaders=val_loader,
+            ckpt_path=pretrained_checkpoint if args.resume_training and pretrained_checkpoint else None
+        )
+    except Exception as e:
+        raise RuntimeError(f"Failed to resume training from checkpoint {pretrained_checkpoint}: {e}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
