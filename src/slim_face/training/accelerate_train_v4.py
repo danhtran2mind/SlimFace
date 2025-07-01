@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.multiprocessing as mp
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
+from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingLR
 from PIL import Image
 import argparse
 import warnings
@@ -128,12 +129,23 @@ class FaceClassifier(nn.Module):
         return output
 
 class FaceClassifierLightning(pl.LightningModule):
-    def __init__(self, base_model, embedding_dim, num_classes, learning_rate):
+    def __init__(self, base_model, embedding_dim, num_classes, learning_rate, warmup_epochs, warmup_start_lr, pretrained_checkpoint=None):
         super(FaceClassifierLightning, self).__init__()
         self.model = FaceClassifier(base_model, embedding_dim, num_classes)
         self.criterion = nn.CrossEntropyLoss()
         self.learning_rate = learning_rate
-        self.save_hyperparameters("embedding_dim", "num_classes", "learning_rate")
+        self.warmup_epochs = warmup_epochs
+        self.warmup_start_lr = warmup_start_lr
+        self.save_hyperparameters("embedding_dim", "num_classes", "learning_rate", "warmup_epochs", "warmup_start_lr")
+
+        # Load pretrained weights if provided
+        if pretrained_checkpoint:
+            try:
+                checkpoint = torch.load(pretrained_checkpoint, map_location='cpu')
+                self.load_state_dict(checkpoint['state_dict'], strict=False)
+                print(f"Loaded pretrained weights from {pretrained_checkpoint}")
+            except Exception as e:
+                print(f"Error loading pretrained weights from {pretrained_checkpoint}: {e}")
 
     def forward(self, x):
         return self.model(x)
@@ -151,7 +163,7 @@ class FaceClassifierLightning(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         images, labels = batch
         outputs = self(images)
-        loss = self.criterion(outputs, labels)
+        loss = self.criterion(outputs, losses, labels)
         self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         _, predicted = torch.max(outputs, 1)
         acc = (predicted == labels).float().mean()
@@ -164,27 +176,57 @@ class FaceClassifierLightning(pl.LightningModule):
         train_acc = metrics.get('train_acc_epoch', 0.0)
         val_loss = metrics.get('val_loss_epoch', 0.0)
         val_acc = metrics.get('val_acc_epoch', 0.0)
-        print(f"\nEpoch {self.current_epoch + 1}: "
-              f"train loss: {train_loss:.4f}, train acc: {train_acc:.4f}, "
-              f"val loss: {val_loss:.4f}, val acc: {val_acc:.4f}")
+        print(f"\nMetric epoch {self.current_epoch + 1}: "
+              f"Train loss: {train_loss:.4f}, Train acc: {train_acc:.4f}, "
+              f"Val loss: {val_loss:.4f}, Val acc: {val_acc:.4f}")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
-        return optimizer
+        
+        # Warmup scheduler: Linearly increase from warmup_start_lr to learning_rate
+        warmup_scheduler = LambdaLR(
+            optimizer,
+            lr_lambda=lambda epoch: (
+                self.warmup_start_lr / self.learning_rate + 
+                (1.0 - self.warmup_start_lr / self.learning_rate) * (epoch / self.warmup_epochs)
+            ) if epoch < self.warmup_epochs else 1.0
+        )
+        
+        # Cosine decay scheduler after warmup
+        cosine_scheduler = CosineAnnealingLR(
+            optimizer,
+            T_max=self.trainer.max_epochs - self.warmup_epochs,
+            eta_min=self.learning_rate * 0.1  # Minimum learning rate is 10% of initial
+        )
+        
+        # Combine schedulers
+        scheduler = {
+            'scheduler': warmup_scheduler,
+            'interval': 'epoch',
+            'frequency': 1
+        }
+        if self.warmup_epochs < self.trainer.max_epochs:
+            scheduler['scheduler'] = torch.optim.lr_scheduler.SequentialLR(
+                optimizer,
+                schedulers=[warmup_scheduler, cosine_scheduler],
+                milestones=[self.warmup_epochs]
+            )
+        
+        return [optimizer], [scheduler]
 
 class CustomModelCheckpoint(ModelCheckpoint):
     def format_checkpoint_name(self, metrics, ver=None):
         metrics['epoch'] = metrics.get('epoch', 0) + 1
         return super().format_checkpoint_name(metrics, ver)
 
+class CustomTQDMProgressBar(TQDMProgressBar):
+    def get_metrics(self, trainer, pl_module):
+        items = super().get_metrics(trainer, pl_module)
+        items["epoch"] = trainer.current_epoch + 1
+        return items
+
 def main(args):
     mp.set_start_method('spawn', force=True)
-
-    # Validate checkpoint paths
-    if args.pretrain_checkpoint and not os.path.exists(args.pretrain_checkpoint):
-        raise FileNotFoundError(f"Pretrained checkpoint file {args.pretrain_checkpoint} does not exist.")
-    if args.resume_from_checkpoint and not os.path.exists(args.resume_from_checkpoint):
-        raise FileNotFoundError(f"Checkpoint file {args.resume_from_checkpoint} does not exist.")
 
     # Define paths for cached datasets
     train_cache_dir = os.path.join(args.dataset_dir, "train_data_aligned")
@@ -212,7 +254,7 @@ def main(args):
 
     # Load datasets from cached aligned images
     train_dataset = FaceDataset(root_dir=train_cache_dir, transform=transform)
-    val_dataset = FaceDataset(root_dir=val_cache_dir, transform=ntransform)
+    val_dataset = FaceDataset(root_dir=val_cache_dir, transform=transform)
 
     # Initialize DataLoaders
     train_loader = DataLoader(
@@ -241,19 +283,26 @@ def main(args):
     base_model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
     base_model.eval()
 
+    # Determine pretrained checkpoint path
+    pretrained_checkpoint = None
+    if args.pretrain_model_dir:
+        checkpoint_files = [f for f in os.listdir(args.pretrain_model_dir) if f.endswith('.ckpt')]
+        if checkpoint_files:
+            pretrained_checkpoint = os.path.join(args.pretrain_model_dir, checkpoint_files[0])
+            print(f"Found pretrained checkpoint: {pretrained_checkpoint}")
+        else:
+            print(f"No checkpoint files found in {args.pretrain_model_dir}. Proceeding without pretrained weights.")
+
     # Initialize Lightning module
     model = FaceClassifierLightning(
         base_model=base_model,
         embedding_dim=args.embedding_dim,
         num_classes=len(train_dataset.class_to_idx),
-        learning_rate=args.learning_rate
+        learning_rate=args.learning_rate,
+        warmup_epochs=args.warmup_epochs,
+        warmup_start_lr=args.warmup_start_lr,
+        pretrained_checkpoint=pretrained_checkpoint
     )
-
-    # Load pretrained weights if provided
-    if args.pretrain_checkpoint:
-        print(f"Loading pretrained weights from {args.pretrain_checkpoint}")
-        checkpoint = torch.load(args.pretrain_checkpoint, map_location='cpu')
-        model.load_state_dict(checkpoint['state_dict'], strict=False)  # Use strict=False to allow partial loading if needed
 
     # Define callbacks
     checkpoint_callback = CustomModelCheckpoint(
@@ -263,16 +312,17 @@ def main(args):
         save_top_k=1,
         mode='min'
     )
-    progress_bar = TQDMProgressBar()
+    progress_bar = CustomTQDMProgressBar()
 
-    # Initialize Trainer with resume_from_checkpoint if provided
+    # Initialize Trainer
     trainer = Trainer(
         max_epochs=args.num_epochs,
         accelerator=args.accelerator,
         devices=args.devices,
         callbacks=[checkpoint_callback, progress_bar],
         log_every_n_steps=10,
-        resume_from_checkpoint=args.resume_from_checkpoint if args.resume_from_checkpoint else None
+        accumulate_grad_batches=args.gradient_accumulation_steps,
+        resume_from_checkpoint=pretrained_checkpoint if args.resume_training and pretrained_checkpoint else None
     )
 
     # Train the model
@@ -284,6 +334,10 @@ if __name__ == '__main__':
                         help='Path to the dataset directory.')
     parser.add_argument('--edgeface_model_path', type=str, default='ckpts/edgeface_ckpts/edgeface_s_gamma_05.pt',
                         help='Path of the EdgeFace model.')
+    parser.add_argument('--pretrain_model_dir', type=str, default=None,
+                        help='Directory containing the pretrained model checkpoint (.ckpt file).')
+    parser.add_argument('--resume_training', action='store_true',
+                        help='Resume training from the checkpoint specified in pretrain_model_dir.')
     parser.add_argument('--batch_size', type=int, default=8,
                         help='Batch size for training and validation.')
     parser.add_argument('--embedding_dim', type=int, default=512,
@@ -292,6 +346,12 @@ if __name__ == '__main__':
                         help='Number of training epochs.')
     parser.add_argument('--learning_rate', type=float, default=1e-3,
                         help='Learning rate for the optimizer.')
+    parser.add_argument('--warmup_epochs', type=int, default=5,
+                        help='Number of epochs for learning rate warmup.')
+    parser.add_argument('--warmup_start_lr', type=float, default=1e-5,
+                        help='Starting learning rate for warmup.')
+    parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
+                        help='Number of steps to accumulate gradients before optimization.')
     parser.add_argument('--accelerator', type=str, default='auto',
                         choices=['cpu', 'gpu', 'tpu', 'auto'],
                         help='Accelerator type for training.')
@@ -300,10 +360,6 @@ if __name__ == '__main__':
     parser.add_argument('--algorithm', type=str, default='yolo',
                         choices=['mtcnn', 'yolo'],
                         help='Face detection algorithm to use (mtcnn or yolo).')
-    parser.add_argument('--resume_from_checkpoint', type=str, default=None,
-                        help='Path to the checkpoint file to resume training from.')
-    parser.add_argument('--pretrain_checkpoint', type=str, default=None,  # Added: Argument for pretrained checkpoint
-                        help='Path to the pretrained checkpoint file to initialize the model weights.')
 
     args = parser.parse_args()
     main(args)
