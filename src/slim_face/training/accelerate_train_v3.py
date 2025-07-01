@@ -10,7 +10,7 @@ import warnings
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
-import tqdm
+from tqdm import tqdm
 import sys
 
 # Add paths to sys.path
@@ -40,7 +40,8 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
             output_person_path = os.path.join(output_dir, person)
             os.makedirs(output_person_path, exist_ok=True)
             
-            for img_name in tqdm(os.listdir(person_path), desc="Processing images"):
+            skipped_count = 0  # Counter for skipped images
+            for img_name in tqdm(os.listdir(person_path), desc="Saving Detected Images"):
                 if not img_name.endswith(('.jpg', '.jpeg', '.png')):
                     continue
                 
@@ -48,7 +49,7 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
                 output_img_path = os.path.join(output_person_path, img_name)
                 
                 if os.path.exists(output_img_path):
-                    # print(f"Skipping {img_path}: Already processed")
+                    skipped_count += 1  # Increment counter instead of printing
                     continue
                 
                 try:
@@ -59,14 +60,15 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
                         aligned_image = Image.open(img_path).convert('RGB')
                     aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
                     aligned_image.save(output_img_path, quality=100)
-                    # print(f"Saved aligned image to {output_img_path}")
                 except Exception as e:
                     print(f"Error processing {img_path}: {e}")
                     aligned_image = Image.open(img_path).convert('RGB')
                     aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
                     aligned_image.save(output_img_path, quality=100)
-                    # print(f"Saved fallback image to {output_img_path}")
-
+            
+            # Print summary of skipped images
+            if skipped_count > 0:
+                print(f"Skipped {skipped_count} images that were already processed.")
 class FaceDataset(Dataset):
     def __init__(self, root_dir, transform=None):
         """
