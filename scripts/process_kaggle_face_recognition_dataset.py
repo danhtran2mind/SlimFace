@@ -25,7 +25,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(2
         raw_dir = os.path.join(base_dir, "raw")
         processed_dir = os.path.join(base_dir, "processed_ds")
         zip_path = os.path.join(raw_dir, "dataset.zip")
-        source_dir = os.path.join(raw_dir, "Faces", "Faces")
+        source_dir = os.path.join(raw_dir, "Original Images", "Original Images")
         train_dir = os.path.join(processed_dir, "train_data")
         val_dir = os.path.join(processed_dir, "val_data")
         os.makedirs(raw_dir, exist_ok=True)
@@ -62,12 +62,15 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(2
         if not os.path.exists(source_dir):
             raise FileNotFoundError(f"Source directory {source_dir} not found")
 
-        # Group files by person
+        # Group files by person (subfolder names)
         person_files = {}
-        for file in os.listdir(source_dir):
-            if os.path.isfile(os.path.join(source_dir, file)) and file.lower().endswith(('.png', '.jpg', '.jpeg')):
-                person = file.split("_")[0].replace(" ", "_")
-                person_files.setdefault(person, []).append(file)
+        for person in os.listdir(source_dir):
+            person_dir = os.path.join(source_dir, person)
+            if os.path.isdir(person_dir):
+                person_files[person] = [
+                    f for f in os.listdir(person_dir)
+                    if os.path.isfile(os.path.join(person_dir, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))
+                ]
 
         # Define augmentation pipeline (if enabled)
         aug = iaa.Sequential([
@@ -88,10 +91,10 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", img_size=(2
                 train_images, val_images = train_test_split(images, test_size=0.2, random_state=42)
 
                 for img in train_images:
-                    process_image(os.path.join(source_dir, img), train_person_dir, img_size, aug)
+                    process_image(os.path.join(source_dir, person, img), train_person_dir, img_size, aug)
                     pbar.update(1)
                 for img in val_images:
-                    process_image(os.path.join(source_dir, img), val_person_dir, img_size, None)  # No augmentation for validation
+                    process_image(os.path.join(source_dir, person, img), val_person_dir, img_size, None)  # No augmentation for validation
                     pbar.update(1)
 
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
