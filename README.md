@@ -24,6 +24,9 @@
 ```bash
 # Clone the repository
 git clone https://github.com/danhtran2mind/slim-face
+
+cd slim-face
+
 # Clone the edgeface model repository
 git clone https://github.com/danhtran2mind/edgeface src/slim_face/models/edgeface
 ```
@@ -33,9 +36,6 @@ git clone https://github.com/danhtran2mind/edgeface src/slim_face/models/edgefac
 sudo apt update
 sudo apt install -y libglib2.0-0
 sudo apt install -y libgl1-mesa-dev
-```
-```bash
-cd slim-face
 ```
 ```bash
 pip install -r requirements.txt
