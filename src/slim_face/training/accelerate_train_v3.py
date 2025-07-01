@@ -10,6 +10,7 @@ import warnings
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+import tqdm
 import sys
 
 # Add paths to sys.path
