@@ -16,7 +16,7 @@ def process_image(src_path, dest_dir, img_size, aug=None):
     try:
         # Open and process image
         img = Image.open(src_path).convert('RGB')
-        img = img.resize(img_size, Image.Resampling.LANCZOS)
+        # img = img.resize(img_size, Image.Resampling.LANCZOS)
         
         # Convert to numpy array and normalize
         img_array = np.array(img) / 255.0
