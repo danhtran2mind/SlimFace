@@ -133,11 +133,8 @@ class FaceClassifierLightning(pl.LightningModule):
         self.model = FaceClassifier(base_model, embedding_dim, num_classes)
         self.criterion = nn.CrossEntropyLoss()
         self.learning_rate = learning_rate
-        # Initialize lists to store metrics for averaging
-        self.train_losses = []
-        self.train_accs = []
-        self.val_losses = []
-        self.val_accs = []
+        # Save hyperparameters for logging
+        self.save_hyperparameters("embedding_dim", "num_classes", "learning_rate")
 
     def forward(self, x):
         return self.model(x)
@@ -146,47 +143,35 @@ class FaceClassifierLightning(pl.LightningModule):
         images, labels = batch
         outputs = self(images)
         loss = self.criterion(outputs, labels)
-        self.log('train_loss', loss, prog_bar=True, on_step=True, on_epoch=True)
+        # Log metrics with sync_dist=True for distributed training
+        self.log('train_loss', loss, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         _, predicted = torch.max(outputs, 1)
         acc = (predicted == labels).float().mean()
-        self.log('train_acc', acc, prog_bar=True, on_step=True, on_epoch=True)
-        # Store metrics for epoch-end averaging
-        self.train_losses.append(loss.item())
-        self.train_accs.append(acc.item())
+        self.log('train_acc', acc, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         images, labels = batch
         outputs = self(images)
         loss = self.criterion(outputs, labels)
-        self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=True)
+        # Log metrics with sync_dist=True for distributed training
+        self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         _, predicted = torch.max(outputs, 1)
         acc = (predicted == labels).float().mean()
-        self.log('val_acc', acc, prog_bar=True, on_step=True, on_epoch=True)
-        # Store metrics for epoch-end averaging
-        self.val_losses.append(loss.item())
-        self.val_accs.append(acc.item())
+        self.log('val_acc', acc, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 
-    def on_train_epoch_end(self):
-        # Compute average training metrics for the epoch
-        avg_train_loss = sum(self.train_losses) / len(self.train_losses) if self.train_losses else 0.0
-        avg_train_acc = sum(self.train_accs) / len(self.train_accs) if self.train_accs else 0.0
-        # Print training metrics
-        print(f"Epoch {self.current_epoch + 1}: train_loss={avg_train_loss:.4f}, train_acc={avg_train_acc:.4f}")
-        # Clear lists for the next epoch
-        self.train_losses = []
-        self.train_accs = []
-
     def on_validation_epoch_end(self):
-        # Compute average validation metrics for the epoch
-        avg_val_loss = sum(self.val_losses) / len(self.val_losses) if self.val_losses else 0.0
-        avg_val_acc = sum(self.val_accs) / len(self.val_accs) if self.val_accs else 0.0
-        # Print validation metrics
-        print(f"Epoch {self.current_epoch + 1}: val_loss={avg_val_loss:.4f}, val_acc={avg_val_acc:.4f}")
-        # Clear lists for the next epoch
-        self.val_losses = []
-        self.val_accs = []
+        # Access epoch-level metrics from logged_metrics
+        metrics = self.trainer.logged_metrics
+        train_loss = metrics.get('train_loss_epoch', 0.0)
+        train_acc = metrics.get('train_acc_epoch', 0.0)
+        val_loss = metrics.get('val_loss_epoch', 0.0)
+        val_acc = metrics.get('val_acc_epoch', 0.0)
+        # Print consolidated metrics for the epoch
+        print(f"Epoch {self.current_epoch + 1}: "
+              f"train_loss={train_loss:.4f}, train_acc={train_acc:.4f}, "
+              f"val_loss={val_loss:.4f}, val_acc={val_acc:.4f}")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
