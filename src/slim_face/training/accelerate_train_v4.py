@@ -36,6 +36,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'm
 from face_alignment import align
 from backbones import get_model
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """
     Preprocess images using YOLO-based face alignment and save aligned images to a cache directory.
