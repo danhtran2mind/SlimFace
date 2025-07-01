@@ -177,7 +177,7 @@ class FaceClassifierLightning(pl.LightningModule):
         metrics = self.trainer.logged_metrics
         train_loss = metrics.get('train_loss_epoch', 0.0)
         train_acc = metrics.get('train_acc_epoch', 0.0)
-        val_loss = metrics.get('ughton, 0.0)
+        val_loss = metrics.get('val_loss_epoch', 0.0)
         val_acc = metrics.get('val_acc_epoch', 0.0)
         print(f"\nMetric epoch {self.current_epoch + 1}: "
               f"Train loss: {train_loss:.4f}, Train acc: {train_acc:.4f}, "
