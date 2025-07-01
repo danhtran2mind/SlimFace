@@ -13,7 +13,24 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 from tqdm import tqdm
 import sys
-
+#################
+import os
+import torch
+import torch.nn as nn
+import torch.multiprocessing as mp
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset, DataLoader
+from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingLR
+from PIL import Image
+import argparse
+import warnings
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+from tqdm import tqdm
+import sys
+from accelerate import Accelerator
+###################3
 # Add paths to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 from face_alignment import align
@@ -226,6 +243,10 @@ class CustomTQDMProgressBar(TQDMProgressBar):
         return items
 
 def main(args):
+    # Initialize Accelerate for distributed training
+    accelerator = Accelerator()
+    
+    # Set multiprocessing start method for compatibility with PyTorch
     mp.set_start_method('spawn', force=True)
 
     # Define paths for cached datasets
@@ -276,6 +297,9 @@ def main(args):
         persistent_workers=True
     )
 
+    # Prepare DataLoaders with Accelerate
+    train_loader, val_loader = accelerator.prepare(train_loader, val_loader)
+
     # Load base model
     model_name = os.path.basename(args.edgeface_model_path).split(".")[0]
     base_model = get_model(model_name)
@@ -293,7 +317,6 @@ def main(args):
         if checkpoint_files:
             pretrained_checkpoint = os.path.join(args.pretrain_model_dir, checkpoint_files[0])
             print(f"Found pretrained checkpoint: {pretrained_checkpoint}")
-            # Validate checkpoint file
             if not os.path.isfile(pretrained_checkpoint):
                 raise FileNotFoundError(f"Checkpoint file {pretrained_checkpoint} does not exist.")
         else:
@@ -310,24 +333,28 @@ def main(args):
         pretrained_checkpoint=pretrained_checkpoint
     )
 
+    # Prepare model with Accelerate
+    model = accelerator.prepare(model)
+
     # Define callbacks
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
-        filename='face_classifier-{epoch:02d}-{val perda:.2f}',
+        filename='face_classifier-{epoch:02d}-{val_loss:.2f}',  # Fixed typo: 'val perda' to 'val_loss'
         save_top_k=1,
         mode='min'
     )
     progress_bar = CustomTQDMProgressBar()
 
-    # Initialize Trainer
+    # Initialize Trainer with Accelerate integration
     trainer = Trainer(
         max_epochs=args.num_epochs,
         accelerator=args.accelerator,
         devices=args.devices,
         callbacks=[checkpoint_callback, progress_bar],
         log_every_n_steps=10,
-        accumulate_grad_batches=args.gradient_accumulation_steps
+        accumulate_grad_batches=args.gradient_accumulation_steps,
+        logger=pl.loggers.TensorBoardLogger(save_dir="logs/")  # Added for better logging
     )
 
     # Train the model, resuming from checkpoint if specified
@@ -343,7 +370,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
-    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds',
+    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds sensiveloss:.2f}',
                         help='Path to the dataset directory.')
     parser.add_argument('--edgeface_model_path', type=str, default='ckpts/edgeface_ckpts/edgeface_s_gamma_05.pt',
                         help='Path of the EdgeFace model.')
