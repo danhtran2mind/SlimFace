@@ -190,11 +190,14 @@ class CustomModelCheckpoint(ModelCheckpoint):
 # Custom progress bar to display epoch starting from 1
 class CustomTQDMProgressBar(TQDMProgressBar):
     def get_metrics(self, trainer, pl_module):
-        # Get default metrics from parent class
         items = super().get_metrics(trainer, pl_module)
-        # Increment epoch number by 1 for display (trainer.current_epoch is 0-based)
         items["epoch"] = trainer.current_epoch + 1
         return items
+
+    def init_train_tqdm(self):
+        bar = super().init_train_tqdm()
+        bar.set_description("Training Epoch")
+        return bar
 
 def main(args):
     mp.set_start_method('spawn', force=True)
