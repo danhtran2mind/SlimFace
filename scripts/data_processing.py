@@ -31,6 +31,6 @@ def process_image(src_path, dest_dir, aug=None):
         
         # Save processed image
         dest_path = os.path.join(dest_dir, os.path.basename(src_path))
-        img.save(dest_path, quality=95)
+        img.save(dest_path, quality=100)
     except Exception as e:
         print(f"Error processing image {src_path}: {e}")
