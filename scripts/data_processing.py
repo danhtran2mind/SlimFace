@@ -2,6 +2,9 @@ from PIL import Image
 import numpy as np
 import os
 import imgaug.augmenters as iaa
+import random
+
+RANDOM_RATIO = 0.5
 
 def process_image(src_path, dest_dir, aug=None):
     """
@@ -26,7 +29,7 @@ def process_image(src_path, dest_dir, aug=None):
         raw_img.save(raw_dest_path, quality=100)
         
         # Apply augmentation if specified and save augmented image
-        if aug:
+        if aug and random.random() <= RANDOM_RATIO:
             # print("Augmentaion")
             img_array_aug = aug.augment_image(img_array)
             # Clip values to ensure valid range after augmentation
