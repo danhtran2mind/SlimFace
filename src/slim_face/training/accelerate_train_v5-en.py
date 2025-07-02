@@ -14,7 +14,7 @@ from tqdm import tqdm
 import math
 from torch.optim.lr_scheduler import LambdaLR
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights  # Import EfficientNet-B0
-from face_alignment import align  # Retained for preprocessing
+# from face_alignment import align  # Retained for preprocessing
 
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """Preprocess images using face alignment and cache them."""
