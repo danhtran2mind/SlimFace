@@ -131,15 +131,15 @@ class FaceClassifier(nn.Module):
             nn.Linear(128, 1024),  # Adjusted input size based on conv_block output
             nn.BatchNorm1d(1024),
             nn.ReLU(),
-            nn.Dropout(0.5),  # Set dropout to 0.5
+            nn.Dropout(0.3),  # Set dropout to 0.3
             nn.Linear(1024, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Dropout(0.5),  # Set dropout to 0.5
+            nn.Dropout(0.3),  # Set dropout to 0.3
             nn.Linear(512, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(0.5),  # Set dropout to 0.5
+            nn.Dropout(0.3),  # Set dropout to 0.3
             nn.Linear(256, num_classes),
         )
 
