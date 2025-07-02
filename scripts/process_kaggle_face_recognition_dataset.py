@@ -33,8 +33,6 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         processed_dir = os.path.join(base_dir, "processed_ds")
         train_dir = os.path.join(processed_dir, "train_data")
         val_dir = os.path.join(processed_dir, "val_data")
-        train_person_dir = os.path.join(train_dir, person)
-        val_person_dir = os.path.join(val_dir, person)
         temp_dir = os.path.join(processed_dir, "temp")
         zip_path = os.path.join(raw_dir, "dataset.zip")
         source_dir = os.path.join(raw_dir, "Original Images", "Original Images")
@@ -76,6 +74,8 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         # Group files by person (subfolder names)
         person_files = {}
         for person in os.listdir(source_dir):
+            train_person_dir = os.path.join(train_dir, person)
+            val_person_dir = os.path.join(val_dir, person)
             person_dir = os.path.join(source_dir, person)
             if os.path.isdir(person_dir):
                 person_files[person] = [
