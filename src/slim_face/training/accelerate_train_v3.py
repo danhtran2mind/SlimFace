@@ -25,7 +25,7 @@ from backbones import get_model
 
 # Add the project root directory to sys.path to allow importing modules from the top-level project structure
 # Constructs an absolute path to the project root, three directories up from the current script
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """
