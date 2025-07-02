@@ -178,18 +178,17 @@ class FaceClassifierLightning(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
+        min_lr = 1e-6  # Minimum learning rate
 
         def lr_lambda(step):
-            # Warmup phase: Use self.warmup_steps (set as a fraction of total_steps in main)
-            min_lr = 1e-6  # Minimum learning rate
             if step < self.warmup_steps:
-                # Linear warmup from min_lr to learning_rate
+                # Linear warmup from min_lr to learning_rate (5e-4)
                 return (self.learning_rate - min_lr) / self.warmup_steps * step + min_lr
-            # Cosine annealing after warmup
+            # Cosine decay from learning_rate to min_lr
             progress = (step - self.warmup_steps) / float(max(1, self.total_steps - self.warmup_steps))
             cosine_lr = 0.5 * (1.0 + math.cos(math.pi * progress))
-            # Scale from min_lr to learning_rate
-            return min_lr + (self.learning_rate - min_lr) * cosine_lr
+            lr = min_lr + (self.learning_rate - min_lr) * cosine_lr
+            return max(lr, min_lr) / self.learning_rate  # Normalize for LambdaLR
 
         scheduler = LambdaLR(optimizer, lr_lambda=lr_lambda)
 
