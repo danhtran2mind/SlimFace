@@ -14,7 +14,16 @@ from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 from tqdm import tqdm
 import math
 from torch.optim.lr_scheduler import LambdaLR
-from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+from torchvision.models import (
+    efficientnet_b0, EfficientNet_B0_Weights,
+    efficientnet_b1, EfficientNet_B1_Weights,
+    efficientnet_b2, EfficientNet_B2_Weights,
+    efficientnet_b3, EfficientNet_B3_Weights,
+    efficientnet_b4, EfficientNet_B4_Weights,
+    efficientnet_b5, EfficientNet_B5_Weights,
+    efficientnet_b6, EfficientNet_B6_Weights,
+    efficientnet_b7, EfficientNet_B7_Weights
+)
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 try:
@@ -23,8 +32,32 @@ except ImportError:
     print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
     align = None
 
-def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
-    """Preprocess images using face alignment and cache them."""
+# Mapping of EfficientNet versions to their input resolutions
+EFFICIENTNET_RESOLUTIONS = {
+    'b0': 224,
+    'b1': 240,
+    'b2': 260,
+    'b3': 300,
+    'b4': 380,
+    'b5': 456,
+    'b6': 528,
+    'b7': 600
+}
+
+# Mapping of EfficientNet versions to their model and weights
+EFFICIENTNET_MODELS = {
+    'b0': (efficientnet_b0, EfficientNet_B0_Weights.IMAGENET1K_V1),
+    'b1': (efficientnet_b1, EfficientNet_B1_Weights.IMAGENET1K_V1),
+    'b2': (efficientnet_b2, EfficientNet_B2_Weights.IMAGENET1K_V1),
+    'b3': (efficientnet_b3, EfficientNet_B3_Weights.IMAGENET1K_V1),
+    'b4': (efficientnet_b4, EfficientNet_B4_Weights.IMAGENET1K_V1),
+    'b5': (efficientnet_b5, EfficientNet_B5_Weights.IMAGENET1K_V1),
+    'b6': (efficientnet_b6, EfficientNet_B6_Weights.IMAGENET1K_V1),
+    'b7': (efficientnet_b7, EfficientNet_B7_Weights.IMAGENET1K_V1)
+}
+
+def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo', resolution=224):
+    """Preprocess images using face alignment and cache them with specified resolution."""
     if align is None:
         raise ImportError("face_alignment package is required for preprocessing.")
     os.makedirs(output_dir, exist_ok=True)
@@ -51,21 +84,22 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
                     if aligned_image is None:
                         print(f"Face detection failed for {img_path}, using resized original image")
                         aligned_image = Image.open(img_path).convert('RGB')
-                    aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
+                    aligned_image = aligned_image.resize((resolution, resolution), Image.Resampling.LANCZOS)
                     aligned_image.save(output_img_path, quality=100)
                 except Exception as e:
                     print(f"Error processing {img_path}: {e}")
                     aligned_image = Image.open(img_path).convert('RGB')
-                    aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
+                    aligned_image = aligned_image.resize((resolution, resolution), Image.Resampling.LANCZOS)
                     aligned_image.save(output_img_path, quality=100)
             if skipped_count > 0:
                 print(f"Skipped {skipped_count} images for {person} that were already processed.")
 
 class FaceDataset(Dataset):
     """Dataset for loading pre-aligned face images."""
-    def __init__(self, root_dir, transform=None):
+    def __init__(self, root_dir, transform=None, resolution=224):
         self.root_dir = root_dir
         self.transform = transform
+        self.resolution = resolution
         self.image_paths = []
         self.labels = []
         self.class_to_idx = {}
@@ -86,9 +120,11 @@ class FaceDataset(Dataset):
         label = self.labels[idx]
         try:
             image = Image.open(img_path).convert('RGB')
+            # Ensure image is resized to the correct resolution
+            image = image.resize((self.resolution, self.resolution), Image.Resampling.LANCZOS)
         except Exception as e:
             print(f"Error loading {img_path}: {e}")
-            image = Image.new('RGB', (224, 224))
+            image = Image.new('RGB', (self.resolution, self.resolution))
         if self.transform:
             image = self.transform(image)
         return image, label
@@ -98,9 +134,13 @@ class FaceClassifier(nn.Module):
     def __init__(self, base_model, num_classes):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
-        # Convolutional head to process [batch_size, 1280, 7, 7]
+        # Determine the number of input channels for the conv head based on the base model
+        with torch.no_grad():
+            dummy_input = torch.zeros(1, 3, 224, 224)  # Temporary input to get feature size
+            features = base_model.features(dummy_input)
+            in_channels = features.shape[1]
         self.conv_head = nn.Sequential(
-            nn.Conv2d(1280, 512, kernel_size=3, padding=1),
+            nn.Conv2d(in_channels, 512, kernel_size=3, padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU(),
             nn.Dropout2d(0.5),
@@ -113,8 +153,8 @@ class FaceClassifier(nn.Module):
         )
 
     def forward(self, x):
-        # Extract feature maps from EfficientNet-B0
-        features = self.base_model.features(x)  # Outputs [batch_size, 1280, 7, 7]
+        # Extract feature maps from EfficientNet
+        features = self.base_model.features(x)
         output = self.conv_head(features)
         return output
 
@@ -206,26 +246,32 @@ class CustomTQDMProgressBar(TQDMProgressBar):
 
 def main(args):
     mp.set_start_method('spawn', force=True)
-    train_cache_dir = os.path.join(args.dataset_dir, "train_data_aligned")
-    val_cache_dir = os.path.join(args.dataset_dir, "val_data_aligned")
-    print("Preprocessing training dataset...")
+    
+    # Get the resolution for the selected EfficientNet version
+    resolution = EFFICIENTNET_RESOLUTIONS.get(args.efficientnet_version, 224)
+    
+    train_cache_dir = os.path.join(args.dataset_dir, f"train_data_aligned_{args.efficientnet_version}")
+    val_cache_dir = os.path.join(args.dataset_dir, f"val_data_aligned_{args.efficientnet_version}")
+    print(f"Preprocessing training dataset with resolution {resolution}...")
     preprocess_and_cache_images(
         input_dir=os.path.join(args.dataset_dir, "train_data"),
         output_dir=train_cache_dir,
-        algorithm=args.algorithm
+        algorithm=args.algorithm,
+        resolution=resolution
     )
-    print("Preprocessing validation dataset...")
+    print(f"Preprocessing validation dataset with resolution {resolution}...")
     preprocess_and_cache_images(
         input_dir=os.path.join(args.dataset_dir, "val_data"),
         output_dir=val_cache_dir,
-        algorithm=args.algorithm
+        algorithm=args.algorithm,
+        resolution=resolution
     )
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    train_dataset = FaceDataset(root_dir=train_cache_dir, transform=transform)
-    val_dataset = FaceDataset(root_dir=val_cache_dir, transform=transform)
+    train_dataset = FaceDataset(root_dir=train_cache_dir, transform=transform, resolution=resolution)
+    val_dataset = FaceDataset(root_dir=val_cache_dir, transform=transform, resolution=resolution)
     if len(train_dataset) == 0 or len(val_dataset) == 0:
         raise ValueError("Dataset is empty. Check dataset directory or preprocessing.")
     train_loader = DataLoader(
@@ -252,8 +298,9 @@ def main(args):
     total_steps = args.num_epochs * steps_per_epoch
     warmup_steps = int(args.warmup_steps * total_steps) if args.warmup_steps > 0 else int(0.05 * total_steps)
     
-    # Load pretrained EfficientNet-B0
-    base_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
+    # Load the appropriate EfficientNet model
+    model_fn, weights = EFFICIENTNET_MODELS.get(args.efficientnet_version, (efficientnet_b0, EfficientNet_B0_Weights.IMAGENET1K_V1))
+    base_model = model_fn(weights=weights)
     for param in base_model.parameters():
         param.requires_grad = False
     base_model.classifier = nn.Identity()  # Remove classifier
@@ -270,7 +317,7 @@ def main(args):
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
-        filename='face_classifier-{epoch:02d}-{val_loss:.2f}',
+        filename=f'face_classifier_{args.efficientnet_version}-{{epoch:02d}}-{{val_loss:.2f}}',
         save_top_k=1,
         mode='min'
     )
@@ -308,6 +355,9 @@ if __name__ == '__main__':
                         help='Fraction of total steps for warmup phase (e.g., 0.05 for 5%).')
     parser.add_argument('--total_steps', type=int, default=0,
                         help='Total number of training steps (0 to use epochs * steps_per_epoch).')
+    parser.add_argument('--efficientnet_version', type=str, default='b0',
+                        choices=['b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7'],
+                        help='EfficientNet version to use (b0 to b7).')
 
     args = parser.parse_args()
     main(args)
