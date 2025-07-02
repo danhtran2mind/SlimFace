@@ -36,28 +36,56 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
+   ffende
+
+System: It looks like the code was cut off again due to length. I'll provide the complete rewritten code, ensuring the learning rate schedule meets your requirements: starting at `--learning_rate` (default 5e-4), linearly increasing to `max_lr` (default 5e-3, via `--max_lr_factor=10.0`) over 5% of total steps, then decaying to `min_lr = 1e-6` with cosine annealing, and logging the learning rate after validation loss. I'll also keep the code concise to avoid truncation while maintaining all functionality.
+
+### Complete Rewritten Code
+
+<xaiArtifact artifact_id="d6ff609d-777a-475e-83d0-d0230e943f21" artifact_version_id="8fe20bf1-058d-4f3b-b878-36e1d21d020c" title="face_classifier.py" contentType="text/python">
+```python
+import os
+import torch
+import torch.nn as nn
+import torch.multiprocessing as mp
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset, DataLoader
+from PIL import Image
+import argparse
+import warnings
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+from tqdm import tqdm
+import sys
+import math
+from torch.optim.lr_scheduler import LambdaLR
+
+# Add edgeface model directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
+from face_alignment import align
+from backbones import get_model
+
+def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
+    """Preprocess images using face alignment and cache them."""
+    os.makedirs(output_dir, exist_ok=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=FutureWarning, message=".*rcond.*")
         for person in sorted(os.listdir(input_dir)):
             person_path = os.path.join(input_dir, person)
             if not os.path.isdir(person_path):
                 continue
-            
             output_person_path = os.path.join(output_dir, person)
             os.makedirs(output_person_path, exist_ok=True)
-            
             skipped_count = 0
             for img_name in tqdm(os.listdir(person_path), desc=f"Processing {person}"):
                 if not img_name.endswith(('.jpg', '.jpeg', '.png')):
                     continue
-                
                 img_path = os.path.join(person_path, img_name)
                 output_img_path = os.path.join(output_person_path, img_name)
-                
                 if os.path.exists(output_img_path):
                     skipped_count += 1
                     continue
-                
                 try:
                     aligned_result = align.get_aligned_face([img_path], algorithm=algorithm)
                     aligned_image = aligned_result[0][1] if aligned_result and len(aligned_result) > 0 else None
@@ -71,25 +99,17 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
                     aligned_image = Image.open(img_path).convert('RGB')
                     aligned_image = aligned_image.resize((224, 224), Image.Resampling.LANCZOS)
                     aligned_image.save(output_img_path, quality=100)
-            
             if skipped_count > 0:
                 print(f"Skipped {skipped_count} images for {person} that were already processed.")
 
 class FaceDataset(Dataset):
+    """Dataset for loading pre-aligned face images."""
     def __init__(self, root_dir, transform=None):
-        """
-        Initialize the dataset to load pre-aligned images.
-        
-        Args:
-            root_dir (str): Path to the directory containing pre-aligned images.
-            transform: Optional transform to be applied to images.
-        """
         self.root_dir = root_dir
         self.transform = transform
         self.image_paths = []
         self.labels = []
         self.class_to_idx = {}
-
         for idx, person in enumerate(sorted(os.listdir(root_dir))):
             person_path = os.path.join(root_dir, person)
             if os.path.isdir(person_path):
@@ -105,19 +125,17 @@ class FaceDataset(Dataset):
     def __getitem__(self, idx):
         img_path = self.image_paths[idx]
         label = self.labels[idx]
-
         try:
             image = Image.open(img_path).convert('RGB')
         except Exception as e:
             print(f"Error loading {img_path}: {e}")
             image = Image.new('RGB', (224, 224))
-
         if self.transform:
             image = self.transform(image)
-
         return image, label
 
 class FaceClassifier(nn.Module):
+    """Face classification model."""
     def __init__(self, base_model, embedding_dim, num_classes):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
@@ -130,10 +148,10 @@ class FaceClassifier(nn.Module):
 
     def forward(self, x):
         embedding = self.base_model(x)
-        output = self.fc(embedding)
-        return output
+        return self.fc(embedding)
 
 class FaceClassifierLightning(pl.LightningModule):
+    """PyTorch Lightning module for face classification."""
     def __init__(self, base_model, embedding_dim, num_classes, learning_rate, warmup_steps=1000, total_steps=100000, max_lr_factor=10.0):
         super(FaceClassifierLightning, self).__init__()
         self.model = FaceClassifier(base_model, embedding_dim, num_classes)
@@ -141,8 +159,8 @@ class FaceClassifierLightning(pl.LightningModule):
         self.learning_rate = learning_rate
         self.warmup_steps = warmup_steps
         self.total_steps = total_steps
-        self.max_lr = learning_rate * max_lr_factor  # Max LR is 10x initial LR
-        self.min_lr = 1e-6  # Minimum learning rate
+        self.max_lr = learning_rate * max_lr_factor
+        self.min_lr = 1e-6
         self.save_hyperparameters("embedding_dim", "num_classes", "learning_rate", "warmup_steps", "total_steps", "max_lr_factor")
 
     def forward(self, x):
@@ -174,7 +192,6 @@ class FaceClassifierLightning(pl.LightningModule):
         train_acc = metrics.get('train_acc_epoch', 0.0)
         val_loss = metrics.get('val_loss_epoch', 0.0)
         val_acc = metrics.get('val_acc_epoch', 0.0)
-        # Get current learning rate from optimizer
         current_lr = self.optimizers().param_groups[0]['lr']
         print(f"\nEpoch {self.current_epoch + 1}: "
               f"Train loss: {train_loss:.4f}, Train acc: {train_acc:.4f}, "
@@ -183,19 +200,16 @@ class FaceClassifierLightning(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
-
         def lr_lambda(step):
             if step < self.warmup_steps:
-                # Linear warmup from learning_rate to max_lr
+                # Linear warmup: lr = start_lr + (max_lr - start_lr) * (step / warmup_steps)
                 return (self.max_lr - self.learning_rate) / self.warmup_steps * step + self.learning_rate
             # Cosine decay from max_lr to min_lr
             progress = (step - self.warmup_steps) / float(max(1, self.total_steps - self.warmup_steps))
             cosine_lr = 0.5 * (1.0 + math.cos(math.pi * progress))
             lr = self.min_lr + (self.max_lr - self.min_lr) * cosine_lr
             return max(lr, self.min_lr) / self.learning_rate  # Normalize for LambdaLR
-
         scheduler = LambdaLR(optimizer, lr_lambda=lr_lambda)
-
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
@@ -215,12 +229,10 @@ class CustomTQDMProgressBar(TQDMProgressBar):
         items = super().get_metrics(trainer, pl_module)
         items["epoch"] = trainer.current_epoch + 1
         return items
-
     def init_train_tqdm(self):
         bar = super().init_train_tqdm()
         bar.set_description(f"Training Epoch {self.trainer.current_epoch + 1}")
         return bar
-
     def on_train_epoch_start(self, trainer, pl_module):
         super().on_train_epoch_start(trainer, pl_module)
         if self.train_progress_bar:
@@ -228,10 +240,8 @@ class CustomTQDMProgressBar(TQDMProgressBar):
 
 def main(args):
     mp.set_start_method('spawn', force=True)
-
     train_cache_dir = os.path.join(args.dataset_dir, "train_data_aligned")
     val_cache_dir = os.path.join(args.dataset_dir, "val_data_aligned")
-
     print("Preprocessing training dataset...")
     preprocess_and_cache_images(
         input_dir=os.path.join(args.dataset_dir, "train_data"),
@@ -244,15 +254,12 @@ def main(args):
         output_dir=val_cache_dir,
         algorithm=args.algorithm
     )
-
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
-
     train_dataset = FaceDataset(root_dir=train_cache_dir, transform=transform)
     val_dataset = FaceDataset(root_dir=val_cache_dir, transform=transform)
-
     train_loader = DataLoader(
         train_dataset,
         batch_size=args.batch_size,
@@ -271,19 +278,14 @@ def main(args):
         pin_memory=True,
         persistent_workers=True
     )
-
     steps_per_epoch = len(train_loader)
     total_steps = args.num_epochs * steps_per_epoch
-    # Warmup for first 5 epochs
-    warmup_epochs = args.warmup_epochs
-    warmup_steps = warmup_epochs * steps_per_epoch
-
+    warmup_steps = int(args.warmup_steps * total_steps) if args.warmup_steps > 0 else int(0.05 * total_steps)
     model_name = os.path.basename(args.edgeface_model_path).split(".")[0]
     base_model = get_model(model_name)
     checkpoint_path = args.edgeface_model_path
     base_model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
     base_model.eval()
-
     model = FaceClassifierLightning(
         base_model=base_model,
         embedding_dim=args.embedding_dim,
@@ -293,7 +295,6 @@ def main(args):
         total_steps=total_steps,
         max_lr_factor=args.max_lr_factor
     )
-
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
@@ -302,7 +303,6 @@ def main(args):
         mode='min'
     )
     progress_bar = CustomTQDMProgressBar()
-
     trainer = Trainer(
         max_epochs=args.num_epochs,
         accelerator=args.accelerator,
@@ -310,7 +310,6 @@ def main(args):
         callbacks=[checkpoint_callback, progress_bar],
         log_every_n_steps=10
     )
-
     trainer.fit(model, train_loader, val_loader)
 
 if __name__ == '__main__':
@@ -337,8 +336,8 @@ if __name__ == '__main__':
     parser.add_argument('--algorithm', type=str, default='yolo',
                         choices=['mtcnn', 'yolo'],
                         help='Face detection algorithm to use (mtcnn or yolo).')
-    parser.add_argument('--warmup_epochs', type=int, default=5,
-                        help='Number of epochs for warmup phase.')
+    parser.add_argument('--warmup_steps', type=float, default=0.05,
+                        help='Fraction of total steps for warmup phase (e.g., 0.05 for 5%).')
     parser.add_argument('--total_steps', type=int, default=0,
                         help='Total number of training steps (0 to use epochs * steps_per_epoch).')
 
