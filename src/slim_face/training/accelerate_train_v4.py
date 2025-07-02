@@ -28,10 +28,7 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """
     Preprocess images using YOLO-based face alignment and save aligned images to a cache directory.
     
-    Args:
-        input_dir (str): Path to the input dataset directory.
-        output_dir (str): Path to the output directory for cached aligned images.
-        algorithm (str): Face detection algorithm ('yolo' or 'mtcnn').
+   (No changes to this function; included for completeness)
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -80,9 +77,7 @@ class FaceDataset(Dataset):
         """
         Initialize the dataset to load pre-aligned images.
         
-        Args:
-            root_dir (str): Path to the directory containing pre-aligned images.
-            transform: Optional transform to be applied to images.
+        (No changes; included for completeness)
         """
         self.root_dir = root_dir
         self.transform = transform
@@ -185,8 +180,8 @@ class FaceClassifierLightning(pl.LightningModule):
 
         def lr_lambda(step):
             if step < self.warmup_steps:
-                # Linear warmup from min_lr to learning_rate (5e-4)
-                return (self.learning_rate - min_lr) / self.warmup_steps * step + min_lr
+                # During warmup, maintain the initial learning rate (5e-4)
+                return 1.0
             # Cosine decay from learning_rate to min_lr
             progress = (step - self.warmup_steps) / float(max(1, self.total_steps - self.warmup_steps))
             cosine_lr = 0.5 * (1.0 + math.cos(math.pi * progress))
