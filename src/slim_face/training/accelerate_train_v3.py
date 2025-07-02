@@ -304,7 +304,7 @@ if __name__ == '__main__':
                         help='Dimension of the embedding layer.')
     parser.add_argument('--num_epochs', type=int, default=100,
                         help='Number of training epochs.')
-    parser.add_argument('--learning_rate', type=float, default=1e-3,
+    parser.add_argument('--learning_rate', type=float, default=5e-4,
                         help='Learning rate for the optimizer.')
     parser.add_argument('--accelerator', type=str, default='auto',
                         choices=['cpu', 'gpu', 'tpu', 'auto'],
