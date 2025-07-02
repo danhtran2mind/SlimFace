@@ -93,7 +93,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
             ])
         else:
             aug = None
-
+        print("=============================if aug: ", aug, "=======================================")
         # Process and split files with progress bar
         total_files = sum(len(images) for images in person_files.values())
         with tqdm(total=total_files, desc="Processing and copying files", unit="file") as pbar:
