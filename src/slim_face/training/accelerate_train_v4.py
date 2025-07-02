@@ -110,49 +110,47 @@ class FaceDataset(Dataset):
 #         return self.fc(embedding)
 
 class FaceClassifier(nn.Module):
-    """Enhanced face classification model with increased complexity, specified dropout, and 1D convolution."""
+    """Enhanced face classification model with 1D convolutional layers, increased complexity, and specified dropout."""
     def __init__(self, base_model, embedding_dim, num_classes):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
         
+        # Convolutional block to process the embedding
+        self.conv_block = nn.Sequential(
+            nn.Conv1d(in_channels=1, out_channels=64, kernel_size=3, padding=1),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.AdaptiveAvgPool1d(1),  # Reduce to a single feature vector
+        )
+        
         # Fully connected block with increased complexity
         self.fc = nn.Sequential(
-            nn.Linear(embedding_dim, 1024),  # Increase units for higher capacity
+            nn.Linear(128, 1024),  # Adjusted input size based on conv_block output
             nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(0.5),  # Set dropout to 0.5
-        )
-        
-        # 1D convolutional block
-        self.conv = nn.Sequential(
-            nn.Conv1d(1024, 512, kernel_size=3, padding=1),
+            nn.Linear(1024, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.MaxPool1d(2, 2),
             nn.Dropout(0.5),  # Set dropout to 0.5
-            nn.Conv1d(512, 256, kernel_size=3, padding=1),
+            nn.Linear(512, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.MaxPool1d(2, 2),
             nn.Dropout(0.5),  # Set dropout to 0.5
-        )
-        
-        # Final fully connected block
-        self.final_fc = nn.Sequential(
-            nn.Linear(256 * 14, 512),  # Assuming input size is 28 (14 after max pooling)
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Dropout(0.5),  # Set dropout to 0.5
-            nn.Linear(512, num_classes),
+            nn.Linear(256, num_classes),
         )
 
     def forward(self, x):
         embedding = self.base_model(x)
-        x = self.fc(embedding).unsqueeze(2)  # Add a dimension for 1D convolution
-        x = self.conv(x)
-        x = x.view(x.size(0), -1)  # Flatten the output
-        return self.final_fc(x)
-
+        # Reshape embedding for 1D convolution: [batch_size, embedding_dim] -> [batch_size, 1, embedding_dim]
+        embedding = embedding.unsqueeze(1)  # Add channel dimension
+        conv_out = self.conv_block(embedding)
+        conv_out = conv_out.squeeze(-1)  # Remove the last dimension after pooling
+        return self.fc(conv_out)
+        
 class FaceClassifierLightning(pl.LightningModule):
     """PyTorch Lightning module for face classification."""
     def __init__(self, base_model, embedding_dim, num_classes, learning_rate, warmup_steps=1000, total_steps=100000, max_lr_factor=10.0):
