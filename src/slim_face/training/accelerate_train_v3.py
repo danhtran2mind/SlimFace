@@ -196,9 +196,14 @@ class CustomTQDMProgressBar(TQDMProgressBar):
 
     def init_train_tqdm(self):
         bar = super().init_train_tqdm()
-        bar.set_description("Training Epoch")
+        bar.set_description(f"Training Epoch {self.trainer.current_epoch + 1}")
         return bar
 
+    def on_train_epoch_start(self, trainer, pl_module):
+        super().on_train_epoch_start(trainer, pl_module)
+        if self.train_progress_bar:
+            self.train_progress_bar.set_description(f"Training Epoch {trainer.current_epoch + 1}")
+            
 def main(args):
     mp.set_start_method('spawn', force=True)
 
