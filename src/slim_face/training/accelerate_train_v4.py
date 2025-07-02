@@ -134,14 +134,16 @@ class FaceClassifier(nn.Module):
         return output
 
 class FaceClassifierLightning(pl.LightningModule):
-    def __init__(self, base_model, embedding_dim, num_classes, learning_rate, warmup_steps=1000, total_steps=100000):
+    def __init__(self, base_model, embedding_dim, num_classes, learning_rate, warmup_steps=1000, total_steps=100000, max_lr_factor=10.0):
         super(FaceClassifierLightning, self).__init__()
         self.model = FaceClassifier(base_model, embedding_dim, num_classes)
         self.criterion = nn.CrossEntropyLoss()
         self.learning_rate = learning_rate
         self.warmup_steps = warmup_steps
         self.total_steps = total_steps
-        self.save_hyperparameters("embedding_dim", "num_classes", "learning_rate", "warmup_steps", "total_steps")
+        self.max_lr = learning_rate * max_lr_factor  # Max LR is 10x initial LR
+        self.min_lr = 1e-6  # Minimum learning rate
+        self.save_hyperparameters("embedding_dim", "num_classes", "learning_rate", "warmup_steps", "total_steps", "max_lr_factor")
 
     def forward(self, x):
         return self.model(x)
@@ -181,17 +183,16 @@ class FaceClassifierLightning(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.fc.parameters(), lr=self.learning_rate)
-        min_lr = 1e-6  # Minimum learning rate
 
         def lr_lambda(step):
             if step < self.warmup_steps:
-                # Linear warmup from min_lr to learning_rate (5e-4)
-                return (self.learning_rate - min_lr) / self.warmup_steps * step + min_lr
-            # Cosine decay from learning_rate to min_lr
+                # Linear warmup from learning_rate to max_lr
+                return (self.max_lr - self.learning_rate) / self.warmup_steps * step + self.learning_rate
+            # Cosine decay from max_lr to min_lr
             progress = (step - self.warmup_steps) / float(max(1, self.total_steps - self.warmup_steps))
             cosine_lr = 0.5 * (1.0 + math.cos(math.pi * progress))
-            lr = min_lr + (self.learning_rate - min_lr) * cosine_lr
-            return max(lr, min_lr) / self.learning_rate  # Normalize for LambdaLR
+            lr = self.min_lr + (self.max_lr - self.min_lr) * cosine_lr
+            return max(lr, self.min_lr) / self.learning_rate  # Normalize for LambdaLR
 
         scheduler = LambdaLR(optimizer, lr_lambda=lr_lambda)
 
@@ -274,7 +275,7 @@ def main(args):
     steps_per_epoch = len(train_loader)
     total_steps = args.num_epochs * steps_per_epoch
     # Warmup for first 5 epochs
-    warmup_epochs = 5
+    warmup_epochs = args.warmup_epochs
     warmup_steps = warmup_epochs * steps_per_epoch
 
     model_name = os.path.basename(args.edgeface_model_path).split(".")[0]
@@ -289,12 +290,13 @@ def main(args):
         num_classes=len(train_dataset.class_to_idx),
         learning_rate=args.learning_rate,
         warmup_steps=warmup_steps,
-        total_steps=total_steps
+        total_steps=total_steps,
+        max_lr_factor=args.max_lr_factor
     )
 
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
-        dirpath='./Override the warmup_steps argument in the parser to specify a different warmup duration (in epochs).checkpoints',
+        dirpath='./checkpoints',
         filename='face_classifier-{epoch:02d}-{val_loss:.2f}',
         save_top_k=1,
         mode='min'
@@ -324,7 +326,9 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type=int, default=100,
                         help='Number of training epochs.')
     parser.add_argument('--learning_rate', type=float, default=5e-4,
-                        help='Learning rate for the optimizer.')
+                        help='Initial learning rate for the optimizer.')
+    parser.add_argument('--max_lr_factor', type=float, default=10.0,
+                        help='Factor to multiply initial learning rate to get max learning rate during warmup.')
     parser.add_argument('--accelerator', type=str, default='auto',
                         choices=['cpu', 'gpu', 'tpu', 'auto'],
                         help='Accelerator type for training.')
