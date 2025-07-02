@@ -132,8 +132,8 @@ class FaceClassifier(nn.Module):
             # nn.Linear(256, num_classes),
             
             nn.Linear(256, 1),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
+            # nn.BatchNorm1d(256),
+            # nn.ReLU(),
             nn.Dropout(0.5),  # Set dropout to 0.5
             nn.Linear(1, num_classes),
         )
