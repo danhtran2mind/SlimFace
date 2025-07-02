@@ -95,9 +95,14 @@ class FaceClassifier(nn.Module):
         self.base_model = base_model
         self.fc = nn.Sequential(
             nn.Linear(embedding_dim, 512),
+            nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
+            nn.Dropout(0.2),
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(256, num_classes)
         )
 
     def forward(self, x):
