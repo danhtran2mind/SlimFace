@@ -60,9 +60,9 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
             raise ValueError("Invalid dataset slug format. Expected 'username/dataset-name'")
         
         dataset_url = f"https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_name}"
-        headers = {"Authorization": f"Bearer {key}"}
+        # headers = {"Authorization": f"Bearer {key}"}
         print(f"Downloading dataset {dataset_slug}...")
-        response = requests.get(dataset_url, headers=headers, stream=True)
+        response = requests.get(dataset_url, stream=True)
         if response.status_code != 200:
             raise Exception(f"Failed to download dataset: {response.status_code}")
 
