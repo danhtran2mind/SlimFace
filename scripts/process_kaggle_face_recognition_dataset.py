@@ -31,6 +31,8 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         # Set up directories
         raw_dir = os.path.join(base_dir, "raw")
         processed_dir = os.path.join(base_dir, "processed_ds")
+        train_person_dir = os.path.join(train_dir, person)
+        val_person_dir = os.path.join(val_dir, person)
         temp_dir = os.path.join(processed_dir, "temp")
         zip_path = os.path.join(raw_dir, "dataset.zip")
         source_dir = os.path.join(raw_dir, "Original Images", "Original Images")
