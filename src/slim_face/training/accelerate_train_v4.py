@@ -28,7 +28,10 @@ def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """
     Preprocess images using YOLO-based face alignment and save aligned images to a cache directory.
     
-   (No changes to this function; included for completeness)
+    Args:
+        input_dir (str): Path to the input dataset directory.
+        output_dir (str): Path to the output directory for cached aligned images.
+        algorithm (str): Face detection algorithm ('yolo' or 'mtcnn').
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -77,7 +80,9 @@ class FaceDataset(Dataset):
         """
         Initialize the dataset to load pre-aligned images.
         
-        (No changes; included for completeness)
+        Args:
+            root_dir (str): Path to the directory containing pre-aligned images.
+            transform: Optional transform to be applied to images.
         """
         self.root_dir = root_dir
         self.transform = transform
@@ -180,8 +185,8 @@ class FaceClassifierLightning(pl.LightningModule):
 
         def lr_lambda(step):
             if step < self.warmup_steps:
-                # During warmup, maintain the initial learning rate (5e-4)
-                return 1.0
+                # Linear warmup from min_lr to learning_rate (5e-4)
+                return (self.learning_rate - min_lr) / self.warmup_steps * step + min_lr
             # Cosine decay from learning_rate to min_lr
             progress = (step - self.warmup_steps) / float(max(1, self.total_steps - self.warmup_steps))
             cosine_lr = 0.5 * (1.0 + math.cos(math.pi * progress))
@@ -268,7 +273,9 @@ def main(args):
 
     steps_per_epoch = len(train_loader)
     total_steps = args.num_epochs * steps_per_epoch
-    warmup_steps = int(args.warmup_steps * total_steps) if args.warmup_steps > 0 else int(0.05 * total_steps)
+    # Warmup for first 5 epochs
+    warmup_epochs = 5
+    warmup_steps = warmup_epochs * steps_per_epoch
 
     model_name = os.path.basename(args.edgeface_model_path).split(".")[0]
     base_model = get_model(model_name)
@@ -287,7 +294,7 @@ def main(args):
 
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
-        dirpath='./checkpoints',
+        dirpath='./Override the warmup_steps argument in the parser to specify a different warmup duration (in epochs).checkpoints',
         filename='face_classifier-{epoch:02d}-{val_loss:.2f}',
         save_top_k=1,
         mode='min'
@@ -326,8 +333,8 @@ if __name__ == '__main__':
     parser.add_argument('--algorithm', type=str, default='yolo',
                         choices=['mtcnn', 'yolo'],
                         help='Face detection algorithm to use (mtcnn or yolo).')
-    parser.add_argument('--warmup_steps', type=float, default=0.05,
-                        help='Fraction of total steps for warmup phase (e.g., 0.05 for 5%).')
+    parser.add_argument('--warmup_epochs', type=int, default=5,
+                        help='Number of epochs for warmup phase.')
     parser.add_argument('--total_steps', type=int, default=0,
                         help='Total number of training steps (0 to use epochs * steps_per_epoch).')
 
