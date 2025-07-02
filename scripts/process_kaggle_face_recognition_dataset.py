@@ -79,7 +79,39 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                     if os.path.isfile(os.path.join(person_dir, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))
                 ]
 
-        # Define augmentation pipeline (if enabled)
+        # # Define augmentation pipeline (if enabled)
+        # if augment:
+        #     aug = iaa.Sequential([
+        #         iaa.Fliplr(p=0.5),  # Horizontally flip images with 50% probability
+        #         iaa.Affine(
+        #             rotate=(-15, 15),  # Random rotation within ±15 degrees
+        #         )
+        #     ])
+        # else:
+        #     aug = None
+            
+        # # Process and split files with progress bar
+        # total_files = sum(len(images) for images in person_files.values())
+        # with tqdm(total=total_files, desc="Processing and copying files", unit="file") as pbar:
+        #     for person, images in person_files.items():
+        #         train_person_dir = os.path.join(train_dir, person)
+        #         val_person_dir = os.path.join(val_dir, person)
+        #         os.makedirs(train_person_dir, exist_ok=True)
+        #         os.makedirs(val_person_dir, exist_ok=True)
+
+        #         train_images, val_images = train_test_split(
+        #             images, test_size=test_split_rate, random_state=random_state
+        #         )
+
+        #         for img in train_images:
+        #             process_image(os.path.join(source_dir, person, img), train_person_dir, aug)
+        #             pbar.update(1)
+        #         for img in val_images:
+        #             # process_image(os.path.join(source_dir, person, img), val_person_dir, None)  # No augmentation for validation
+        #             process_image(os.path.join(source_dir, person, img), val_person_dir, aug)  # No augmentation for validation
+        #             pbar.update(1)
+
+        # Define augmentation pipeline
         if augment:
             aug = iaa.Sequential([
                 iaa.Fliplr(p=0.5),  # Horizontally flip images with 50% probability
@@ -89,28 +121,37 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
             ])
         else:
             aug = None
-            
-        # Process and split files with progress bar
-        total_files = sum(len(images) for images in person_files.values())
-        with tqdm(total=total_files, desc="Processing and copying files", unit="file") as pbar:
-            for person, images in person_files.items():
-                train_person_dir = os.path.join(train_dir, person)
-                val_person_dir = os.path.join(val_dir, person)
-                os.makedirs(train_person_dir, exist_ok=True)
-                os.makedirs(val_person_dir, exist_ok=True)
-
-                train_images, val_images = train_test_split(
-                    images, test_size=test_split_rate, random_state=random_state
-                )
-
-                for img in train_images:
-                    process_image(os.path.join(source_dir, person, img), train_person_dir, aug)
-                    pbar.update(1)
-                for img in val_images:
-                    # process_image(os.path.join(source_dir, person, img), val_person_dir, None)  # No augmentation for validation
-                    process_image(os.path.join(source_dir, person, img), val_person_dir, aug)  # No augmentation for validation
-                    pbar.update(1)
-
+    
+        # Ensure directories exist
+        os.makedirs(temp_dir, exist_ok=True)
+        os.makedirs(train_person_dir, exist_ok=True)
+        os.makedirs(val_person_dir, exist_ok=True)
+    
+        # Collect all images for the person
+        images = [img for img in os.listdir(os.path.join(source_dir, person)) if img.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        
+        # Process and augment all images, saving to temporary directory
+        all_image_filenames = []
+        for img in images:
+            src_path = os.path.join(source_dir, person, img)
+            saved_images = process_image(src_path, temp_dir, aug)
+            all_image_filenames.extend(saved_images)
+        
+        # Split the combined list of raw and augmented images
+        train_images, val_images = train_test_split(
+            all_image_filenames, test_size=test_split_rate, random_state=random_state
+        )
+    
+        # Move images to final training and validation directories
+        for img in train_images:
+            src = os.path.join(temp_dir, img)
+            dst = os.path.join(train_person_dir, img)
+            os.rename(src, dst)
+        for img in val_images:
+            src = os.path.join(temp_dir, img)
+            dst = os.path.join(val_person_dir, img)
+            os.rename(src, dst)
+    
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
 
     except Exception as e:
