@@ -1,4 +1,5 @@
 import os
+import sys
 import torch
 import torch.nn as nn
 import torch.multiprocessing as mp
@@ -13,11 +14,19 @@ from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 from tqdm import tqdm
 import math
 from torch.optim.lr_scheduler import LambdaLR
-from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights  # Import EfficientNet-B0
-# from face_alignment import align  # Retained for preprocessing
+from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
+try:
+    from face_alignment import align
+except ImportError:
+    print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
+    align = None
 
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """Preprocess images using face alignment and cache them."""
+    if align is None:
+        raise ImportError("face_alignment package is required for preprocessing.")
     os.makedirs(output_dir, exist_ok=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=FutureWarning, message=".*rcond.*")
@@ -89,24 +98,23 @@ class FaceClassifier(nn.Module):
     def __init__(self, base_model, num_classes):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
-        # EfficientNet-B0 outputs feature maps of shape [batch_size, 1280, 7, 7]
+        # Convolutional head to process [batch_size, 1280, 7, 7]
         self.conv_head = nn.Sequential(
-            nn.Conv2d(1280, 512, kernel_size=3, padding=1),  # Reduce channels
+            nn.Conv2d(1280, 512, kernel_size=3, padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU(),
             nn.Dropout2d(0.5),
-            nn.Conv2d(512, 256, kernel_size=3, padding=1),   # Further reduce channels
+            nn.Conv2d(512, 256, kernel_size=3, padding=1),
             nn.BatchNorm2d(256),
             nn.ReLU(),
-            nn.AdaptiveAvgPool2d(1),  # Global average pooling to [batch_size, 256, 1, 1]
+            nn.AdaptiveAvgPool2d(1),
             nn.Flatten(),
-            nn.Linear(256, num_classes)  # Final classification layer
+            nn.Linear(256, num_classes)
         )
 
     def forward(self, x):
-        # Extract features from EfficientNet-B0 (outputs [batch_size, 1280, 7, 7])
-        features = self.base_model(x)
-        # Pass through convolutional head
+        # Extract feature maps from EfficientNet-B0
+        features = self.base_model.features(x)  # Outputs [batch_size, 1280, 7, 7]
         output = self.conv_head(features)
         return output
 
@@ -214,10 +222,12 @@ def main(args):
     )
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # ImageNet normalization
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     train_dataset = FaceDataset(root_dir=train_cache_dir, transform=transform)
     val_dataset = FaceDataset(root_dir=val_cache_dir, transform=transform)
+    if len(train_dataset) == 0 or len(val_dataset) == 0:
+        raise ValueError("Dataset is empty. Check dataset directory or preprocessing.")
     train_loader = DataLoader(
         train_dataset,
         batch_size=args.batch_size,
@@ -237,17 +247,17 @@ def main(args):
         persistent_workers=True
     )
     steps_per_epoch = len(train_loader)
+    if steps_per_epoch == 0:
+        raise ValueError("Train DataLoader is empty. Check dataset size or batch configuration.")
     total_steps = args.num_epochs * steps_per_epoch
     warmup_steps = int(args.warmup_steps * total_steps) if args.warmup_steps > 0 else int(0.05 * total_steps)
     
     # Load pretrained EfficientNet-B0
     base_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-    # Freeze the base model parameters
     for param in base_model.parameters():
         param.requires_grad = False
-    # Replace the classifier to output feature maps
-    base_model.classifier = nn.Identity()  # Outputs [batch_size, 1280, 7, 7]
-    base_model.eval()  # Set to evaluation mode
+    base_model.classifier = nn.Identity()  # Remove classifier
+    base_model.eval()
     
     model = FaceClassifierLightning(
         base_model=base_model,
