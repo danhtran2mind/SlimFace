@@ -13,10 +13,19 @@ from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 from tqdm import tqdm
 import sys
 
-# Add paths to sys.path
+# Add the 'edgeface' model directory to sys.path to allow importing modules from it
+# Constructs an absolute path to the 'edgeface' directory located at '../models/edgeface' relative to the current script
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
+
+# Import the 'align' function from the 'face_alignment' module
 from face_alignment import align
+
+# Import the 'get_model' function from the 'backbones' module
 from backbones import get_model
+
+# Add the project root directory to sys.path to allow importing modules from the top-level project structure
+# Constructs an absolute path to the project root, three directories up from the current script
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """
