@@ -15,52 +15,6 @@ import sys
 import math
 from torch.optim.lr_scheduler import LambdaLR
 
-# Add the 'edgeface' model directory to sys.path to allow importing modules from it
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
-
-# Import the 'align' function from the 'face_alignment' module
-from face_alignment import align
-
-# Import the 'get_model' function from the 'backbones' module
-from backbones import get_model
-
-def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
-    """
-    Preprocess images using YOLO-based face alignment and save aligned images to a cache directory.
-    
-    Args:
-        input_dir (str): Path to the input dataset directory.
-        output_dir (str): Path to the output directory for cached aligned images.
-        algorithm (str): Face detection algorithm ('yolo' or 'mtcnn').
-    """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    
-   ffende
-
-System: It looks like the code was cut off again due to length. I'll provide the complete rewritten code, ensuring the learning rate schedule meets your requirements: starting at `--learning_rate` (default 5e-4), linearly increasing to `max_lr` (default 5e-3, via `--max_lr_factor=10.0`) over 5% of total steps, then decaying to `min_lr = 1e-6` with cosine annealing, and logging the learning rate after validation loss. I'll also keep the code concise to avoid truncation while maintaining all functionality.
-
-### Complete Rewritten Code
-
-<xaiArtifact artifact_id="d6ff609d-777a-475e-83d0-d0230e943f21" artifact_version_id="8fe20bf1-058d-4f3b-b878-36e1d21d020c" title="face_classifier.py" contentType="text/python">
-```python
-import os
-import torch
-import torch.nn as nn
-import torch.multiprocessing as mp
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset, DataLoader
-from PIL import Image
-import argparse
-import warnings
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
-from tqdm import tqdm
-import sys
-import math
-from torch.optim.lr_scheduler import LambdaLR
-
 # Add edgeface model directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 from face_alignment import align
