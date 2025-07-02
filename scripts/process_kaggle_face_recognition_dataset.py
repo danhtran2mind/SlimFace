@@ -84,16 +84,12 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
             aug = iaa.Sequential([
                 iaa.Fliplr(p=0.5),  # Horizontally flip images with 50% probability
                 iaa.Affine(
-                    rotate=(-rotation_range, rotation_range),  # Random rotation within specified range
-                    shear=(-5, 5),  # Random shear between -5 and 5 degrees
-                    scale=(0.9, 1.1)  # Random scaling between 90% and 110%
-                ),
-                iaa.PerspectiveTransform(scale=(0.01, 0.05)),  # Simulate varying viewing angles
-                iaa.GaussianBlur(sigma=(0.0, 0.5))  # Apply slight Gaussian blur with sigma between 0 and 0.5
+                    rotate=(-15, 15),  # Random rotation within ±15 degrees
+                )
             ])
         else:
             aug = None
-        print("=============================if aug: ", aug, "=======================================")
+            
         # Process and split files with progress bar
         total_files = sum(len(images) for images in person_files.values())
         with tqdm(total=total_files, desc="Processing and copying files", unit="file") as pbar:
