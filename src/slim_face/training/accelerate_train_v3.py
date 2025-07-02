@@ -23,10 +23,6 @@ from face_alignment import align
 # Import the 'get_model' function from the 'backbones' module
 from backbones import get_model
 
-# Add the project root directory to sys.path to allow importing modules from the top-level project structure
-# Constructs an absolute path to the project root, three directories up from the current script
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
-
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo'):
     """
     Preprocess images using YOLO-based face alignment and save aligned images to a cache directory.
