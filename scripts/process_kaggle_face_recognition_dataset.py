@@ -108,7 +108,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                     pbar.update(1)
                 for img in val_images:
                     # process_image(os.path.join(source_dir, person, img), val_person_dir, None)  # No augmentation for validation
-                     process_image(os.path.join(source_dir, person, img), val_person_dir, aug)  # No augmentation for validation
+                    process_image(os.path.join(source_dir, person, img), val_person_dir, aug)  # No augmentation for validation
                     pbar.update(1)
 
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
