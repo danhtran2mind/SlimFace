@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from data_processing import process_image
 
-def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=False, random_state=42, test_split_rate=0.2):
+def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=False, random_state=42, test_split_rate=0.2, rotation_range=15):
     """
     Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
 
@@ -21,6 +21,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         augment (bool): Whether to apply data augmentation.
         random_state (int): Random seed for reproducibility in train-test split.
         test_split_rate (float): Proportion of data to use for validation (between 0 and 1).
+        rotation_range (int): Maximum rotation angle in degrees for augmentation.
     """
     try:
         # Validate test_split_rate
@@ -81,7 +82,12 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         # Define augmentation pipeline (if enabled)
         aug = iaa.Sequential([
             iaa.Fliplr(0.5),  # Horizontal flip with 50% probability
-            iaa.Affine(rotate=(-10, 10)),  # Random rotation
+            iaa.Affine(
+                rotate=(-rotation_range, rotation_range),  # Random rotation within specified range
+                shear=(-5, 5),  # Add slight shear for additional angle variation
+                scale=(0.9, 1.1)  # Slight zoom in/out
+            ),
+            iaa.PerspectiveTransform(scale=(0.01, 0.05)),  # Simulate different viewing angles
             iaa.GaussianBlur(sigma=(0, 0.5))  # Slight blur
         ]) if augment else None
 
@@ -141,6 +147,12 @@ if __name__ == "__main__":
         default=0.2,
         help="Proportion of data for validation (between 0 and 1)"
     )
+    parser.add_argument(
+        "--rotation_range",
+        type=int,
+        default=15,
+        help="Maximum rotation angle in degrees for augmentation"
+    )
 
     args = parser.parse_args()
 
@@ -149,5 +161,6 @@ if __name__ == "__main__":
         base_dir=args.base_dir,
         augment=args.augment,
         random_state=args.random_state,
-        test_split_rate=args.test_split_rate
+        test_split_rate=args.test_split_rate,
+        rotation_range=args.rotation_range
     )
