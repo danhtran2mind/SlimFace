@@ -5,21 +5,28 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import imgaug.augmenters as iaa
 import sys
+import argparse
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from data_processing import process_image
 
-def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=False):
+def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=False, random_state=42, test_split_rate=0.2):
     """
     Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
 
     Args:
-        dataset_slug (str): Dataset slug in 'username/dataset-name' format
-        base_dir (str): Base directory for storing dataset
-        augment (bool): Whether to apply data augmentation
+        dataset_slug (str): Dataset slug in 'username/dataset-name' format.
+        base_dir (str): Base directory for storing dataset.
+        augment (bool): Whether to apply data augmentation.
+        random_state (int): Random seed for reproducibility in train-test split.
+        test_split_rate (float): Proportion of data to use for validation (between 0 and 1).
     """
     try:
+        # Validate test_split_rate
+        if not 0 < test_split_rate < 1:
+            raise ValueError("test_split_rate must be between 0 and 1")
+
         # Set up directories
         raw_dir = os.path.join(base_dir, "raw")
         processed_dir = os.path.join(base_dir, "processed_ds")
@@ -87,7 +94,9 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                 os.makedirs(train_person_dir, exist_ok=True)
                 os.makedirs(val_person_dir, exist_ok=True)
 
-                train_images, val_images = train_test_split(images, test_size=0.2, random_state=42)
+                train_images, val_images = train_test_split(
+                    images, test_size=test_split_rate, random_state=random_state
+                )
 
                 for img in train_images:
                     process_image(os.path.join(source_dir, person, img), train_person_dir, aug)
@@ -101,7 +110,44 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
     except Exception as e:
         print(f"Error processing dataset: {e}")
 
-# Example usage
 if __name__ == "__main__":
-    dataset_slug = "vasukipatel/face-recognition-dataset"
-    download_and_split_kaggle_dataset(dataset_slug, augment=True)
+    parser = argparse.ArgumentParser(description="Download and process a Kaggle dataset for face recognition.")
+    parser.add_argument(
+        "--dataset_slug",
+        type=str,
+        default="vasukipatel/face-recognition-dataset",
+        help="Kaggle dataset slug in 'username/dataset-name' format"
+    )
+    parser.add_argument(
+        "--base_dir",
+        type=str,
+        default="./data",
+        help="Base directory for storing dataset"
+    )
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Enable data augmentation"
+    )
+    parser.add_argument(
+        "--random_state",
+        type=int,
+        default=42,
+        help="Random seed for train-test split reproducibility"
+    )
+    parser.add_argument(
+        "--test_split_rate",
+        type=float,
+        default=0.2,
+        help="Proportion of data for validation (between 0 and 1)"
+    )
+
+    args = parser.parse_args()
+
+    download_and_split_kaggle_dataset(
+        dataset_slug=args.dataset_slug,
+        base_dir=args.base_dir,
+        augment=args.augment,
+        random_state=args.random_state,
+        test_split_rate=args.test_split_rate
+    )
