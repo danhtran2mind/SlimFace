@@ -44,15 +44,15 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         os.makedirs(temp_dir, exist_ok=True)
 
         # Load Kaggle API credentials
-        kaggle_json_path = os.path.expanduser("~/.kaggle/kaggle.json")
-        if not os.path.exists(kaggle_json_path):
-            raise FileNotFoundError("Kaggle API credentials not found. Please set up ~/.kaggle/kaggle.json.")
-        with open(kaggle_json_path, 'r') as f:
-            kaggle_credentials = json.load(f)
-        username = kaggle_credentials.get('username')
-        key = kaggle_credentials.get('key')
-        if not (username and key):
-            raise ValueError("Invalid Kaggle API credentials.")
+        # kaggle_json_path = os.path.expanduser("~/.kaggle/kaggle.json")
+        # if not os.path.exists(kaggle_json_path):
+        #     raise FileNotFoundError("Kaggle API credentials not found. Please set up ~/.kaggle/kaggle.json.")
+        # with open(kaggle_json_path, 'r') as f:
+        #     kaggle_credentials = json.load(f)
+        # username = kaggle_credentials.get('username')
+        # key = kaggle_credentials.get('key')
+        # if not (username and key):
+        #     raise ValueError("Invalid Kaggle API credentials.")
 
         # Download dataset with progress bar
         username, dataset_name = dataset_slug.split('/')
