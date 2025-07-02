@@ -24,13 +24,13 @@ from torchvision.models import (
     efficientnet_b6, EfficientNet_B6_Weights,
     efficientnet_b7, EfficientNet_B7_Weights
 )
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
-try:
-    from face_alignment import align
-except ImportError:
-    print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
-    align = None
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
+# try:
+#     from face_alignment import align
+# except ImportError:
+#     print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
+#     align = None
 
 # Mapping of EfficientNet versions to their input resolutions
 EFFICIENTNET_RESOLUTIONS = {
