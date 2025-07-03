@@ -5,8 +5,8 @@ import imgaug.augmenters as iaa
 import random
 import uuid
 
-RANDOM_RATIO = 0.5
-TARGET_SIZE = (224, 224)  # Standard size for face recognition models
+RANDOM_RATIO = 1.0 # 0.5
+# TARGET_SIZE = (224, 224)  # Standard size for face recognition models
 
 def process_image(src_path, dest_dir, aug=None):
     """
@@ -26,7 +26,7 @@ def process_image(src_path, dest_dir, aug=None):
         img = Image.open(src_path).convert('RGB')
         
         # Resize image
-        img = img.resize(TARGET_SIZE, Image.Resampling.LANCZOS)
+        # img = img.resize(TARGET_SIZE, Image.Resampling.LANCZOS)
         
         # Convert to numpy array and normalize
         img_array = np.array(img) / 255.0
