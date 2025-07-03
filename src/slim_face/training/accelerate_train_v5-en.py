@@ -240,14 +240,7 @@ class CustomTQDMProgressBar(TQDMProgressBar):
     def init_train_tqdm(self):
         bar = super().init_train_tqdm()
         bar.set_description(f"Training Epoch {self.trainer.current_epoch + 1}")
-        return bar
-    def init_validation_tqdm(self):
-        bar = super().init_validation_tqdm()
-        # Ensure total is set to avoid None issues during sanity check
-        if self.trainer.sanity_checking:
-            bar.total = self.trainer.num_sanity_val_steps or 1
-        bar.set_description(f"{'Sanity Checking' if self.trainer.sanity_checking else 'Validating'} Epoch {self.trainer.current_epoch + 1}")
-        return bar    
+        return bar   
     def on_train_epoch_start(self, trainer, pl_module):
         super().on_train_epoch_start(trainer, pl_module)
         if self.train_progress_bar:
