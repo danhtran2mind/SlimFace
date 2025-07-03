@@ -354,7 +354,7 @@ def main(args):
     
     # Load the appropriate model
     model_fn = MODEL_CONFIGS[args.classification_model_name]['model_fn']
-    weights = MODEL_CONFIGS[args.classification_model_name]['weights']
+    # weights = MODEL_CONFIGS[args.classification_model_name]['weights']
     base_model = model_fn(weights=weights)
     for param in base_model.parameters():
         param.requires_grad = False
