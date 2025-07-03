@@ -13,9 +13,18 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from data_processing import process_image
 
-def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=False, random_state=42, test_split_rate=0.2, rotation_range=15, source_subdir="Original Images/Original Images"):
-    """
-    Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
+def download_and_split_kaggle_dataset(
+    dataset_slug,
+    base_dir="data",
+    augment=False,
+    random_state=42,
+    test_split_rate=0.2,
+    rotation_range=15,
+    source_subdir="Original Images/Original Images"
+):
+    """Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
+
+    Skips downloading if ZIP exists and unzipping if raw folder contains files.
 
     Args:
         dataset_slug (str): Dataset slug in 'username/dataset-name' format.
@@ -24,7 +33,12 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         random_state (int): Random seed for reproducibility in train-test split.
         test_split_rate (float): Proportion of data to use for validation (between 0 and 1).
         rotation_range (int): Maximum rotation angle in degrees for augmentation.
-        source_subdir (str): Subdirectory within raw_dir containing images (default: 'Original Images/Original Images').
+        source_subdir (str): Subdirectory within raw_dir containing images.
+
+    Raises:
+        ValueError: If test_split_rate is not between 0 and 1 or dataset_slug is invalid.
+        FileNotFoundError: If source directory is not found.
+        Exception: If dataset download fails or other errors occur.
     """
     try:
         # Validate test_split_rate
@@ -37,38 +51,46 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         train_dir = os.path.join(processed_dir, "train_data")
         val_dir = os.path.join(processed_dir, "val_data")
         zip_path = os.path.join(raw_dir, "dataset.zip")
-        
+
         os.makedirs(raw_dir, exist_ok=True)
         os.makedirs(processed_dir, exist_ok=True)
 
-        # Download dataset with progress bar
-        username, dataset_name = dataset_slug.split('/')
-        if not (username and dataset_name):
-            raise ValueError("Invalid dataset slug format. Expected 'username/dataset-name'")
-        
-        dataset_url = f"https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_name}"
-        print(f"Downloading dataset {dataset_slug}...")
-        response = requests.get(dataset_url, stream=True)
-        if response.status_code != 200:
-            raise Exception(f"Failed to download dataset: {response.status_code}")
+        # Check if ZIP file already exists
+        if os.path.exists(zip_path):
+            print(f"ZIP file already exists at {zip_path}, skipping download.")
+        else:
+            # Download dataset with progress bar
+            username, dataset_name = dataset_slug.split("/")
+            if not (username and dataset_name):
+                raise ValueError("Invalid dataset slug format. Expected 'username/dataset-name'")
 
-        total_size = int(response.headers.get('content-length', 0))
-        with open(zip_path, 'wb') as f, tqdm(
-            desc="Downloading dataset",
-            total=total_size,
-            unit='B',
-            unit_scale=True,
-            unit_divisor=1024
-        ) as pbar:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-                    pbar.update(len(chunk))
+            dataset_url = f"https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_name}"
+            print(f"Downloading dataset {dataset_slug}...")
+            response = requests.get(dataset_url, stream=True)
+            if response.status_code != 200:
+                raise Exception(f"Failed to download dataset: {response.status_code}")
 
-        # Extract dataset
-        print("Extracting dataset...")
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(raw_dir)
+            total_size = int(response.headers.get("content-length", 0))
+            with open(zip_path, "wb") as file, tqdm(
+                desc="Downloading dataset",
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as pbar:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        file.write(chunk)
+                        pbar.update(len(chunk))
+
+        # Check if raw directory contains files
+        if os.path.exists(raw_dir) and any(os.listdir(raw_dir)):
+            print(f"Raw directory {raw_dir} already contains files, skipping extraction.")
+        else:
+            # Extract dataset
+            print("Extracting dataset...")
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                zip_ref.extractall(raw_dir)
 
         # Define source directory
         source_dir = os.path.join(raw_dir, source_subdir)
@@ -82,19 +104,19 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
             if os.path.isdir(person_dir):
                 person_files[person] = [
                     f for f in os.listdir(person_dir)
-                    if os.path.isfile(os.path.join(person_dir, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))
+                    if os.path.isfile(os.path.join(person_dir, f))
+                    and f.lower().endswith((".png", ".jpg", ".jpeg"))
                 ]
-            break
-            
+            break  # Note: This may be intentional; remove if all persons should be processed
+
         # Define augmentation pipeline
         if augment:
             aug = iaa.Sequential([
-                iaa.Fliplr(p=1.0),  # Always flip images horizontally
-                iaa.Sometimes(0.5,  # Apply the following with 50% probability
-                    iaa.Affine(
-                        rotate=(-rotation_range, rotation_range)  # Random rotation within ±degrees
-                    )
-                )
+                iaa.Fliplr(p=1.0),
+                iaa.Sometimes(
+                    0.5,
+                    iaa.Affine(rotate=(-rotation_range, rotation_range))
+                ),
             ])
         else:
             aug = None
@@ -112,32 +134,20 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                 os.makedirs(temp_dir, exist_ok=True)
 
                 all_image_filenames = []
-                
+
                 # Process images and create augmentations before splitting
                 for img in images:
                     src_path = os.path.join(source_dir, person, img)
-                    # print(f"Processing image: {src_path}")
-                    
-                    # Append original image filename
-                    # original_filename = os.path.basename(src_path)
-                    # all_image_filenames.append(original_filename)
-                    
-                    # Process and save images (original and augmented) to temp directory
                     saved_images = process_image(src_path, temp_dir, aug if augment else None)
-                    # print(f"Saved images from process_image: {saved_images}")
                     all_image_filenames.extend(saved_images)
                     pbar.update(1)
 
-                # Verify files in temp directory
-                temp_files = os.listdir(temp_dir)
-                # print(f"Files in temp_dir after processing {person}: {temp_files}")
-
                 # Split all images (original and augmented) for this person
                 train_images_filenames, val_images_filenames = train_test_split(
-                    all_image_filenames, test_size=test_split_rate, random_state=random_state
+                    all_image_filenames,
+                    test_size=test_split_rate,
+                    random_state=random_state,
                 )
-                # print(f"Train images for {person}: {train_images_filenames}")
-                # print(f"Validation images for {person}: {val_images_filenames}")
 
                 # Move images to final train/val directories
                 for img in all_image_filenames:
@@ -149,7 +159,6 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                         dst = os.path.join(train_person_dir, img)
                     else:
                         dst = os.path.join(val_person_dir, img)
-                    # print(f"Moving {src} to {dst}")
                     os.rename(src, dst)
 
                 # Clean up temporary directory for this person
