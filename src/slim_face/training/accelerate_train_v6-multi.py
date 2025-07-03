@@ -26,28 +26,43 @@ except ImportError:
     align = None
 
 # Mapping of model names to their input resolutions and weights
-MODEL_CONFIGS = {
-    'efficientnet_b0': {'resolution': 224, 'model_fn': models.efficientnet_b0, 'weights': models.EfficientNet_B0_Weights.IMAGENET1K_V1},
-    'efficientnet_b1': {'resolution': 240, 'model_fn': models.efficientnet_b1, 'weights': models.EfficientNet_B1_Weights.IMAGENET1K_V1},
-    'efficientnet_b2': {'resolution': 260, 'model_fn': models.efficientnet_b2, 'weights': models.EfficientNet_B2_Weights.IMAGENET1K_V1},
-    'efficientnet_b3': {'resolution': 300, 'model_fn': models.efficientnet_b3, 'weights': models.EfficientNet_B3_Weights.IMAGENET1K_V1},
-    'efficientnet_b4': {'resolution': 380, 'model_fn': models.efficientnet_b4, 'weights': models.EfficientNet_B4_Weights.IMAGENET1K_V1},
-    'efficientnet_b5': {'resolution': 456, 'model_fn': models.efficientnet_b5, 'weights': models.EfficientNet_B5_Weights.IMAGENET1K_V1},
-    'efficientnet_b6': {'resolution': 528, 'model_fn': models.efficientnet_b6, 'weights': models.EfficientNet_B6_Weights.IMAGENET1K_V1},
-    'efficientnet_b7': {'resolution': 600, 'model_fn': models.efficientnet_b7, 'weights': models.EfficientNet_B7_Weights.IMAGENET1K_V1},
-    'efficientnet_v2_s': {'resolution': 384, 'model_fn': models.efficientnet_v2_s, 'weights': models.EfficientNet_V2_S_Weights.IMAGENET1K_V1},
-    'efficientnet_v2_m': {'resolution': 480, 'model_fn': models.efficientnet_v2_m, 'weights': models.EfficientNet_V2_M_Weights.IMAGENET1K_V1},
-    'efficientnet_v2_l': {'resolution': 480, 'model_fn': models.efficientnet_v2_l, 'weights': models.EfficientNet_V2_L_Weights.IMAGENET1K_V1},
-    'regnet_y_400mf': {'resolution': 224, 'model_fn': models.regnet_y_400mf, 'weights': models.RegNet_Y_400MF_Weights.IMAGENET1K_V2},
-    'regnet_y_800mf': {'resolution': 224, 'model_fn': models.regnet_y_800mf, 'weights': models.RegNet_Y_800MF_Weights.IMAGENET1K_V2},
-    'regnet_y_1_6gf': {'resolution': 224, 'model_fn': models.regnet_y_1_6gf, 'weights': models.RegNet_Y_1_6GF_Weights.IMAGENET1K_V2},
-    'regnet_y_3_2gf': {'resolution': 224, 'model_fn': models.regnet_y_3_2gf, 'weights': models.RegNet_Y_3_2GF_Weights.IMAGENET1K_V2},
-    'regnet_y_8gf': {'resolution': 224, 'model_fn': models.regnet_y_8gf, 'weights': models.RegNet_Y_8GF_Weights.IMAGENET1K_V2},
-    'regnet_y_16gf': {'resolution': 224, 'model_fn': models.regnet_y_16gf, 'weights': models.RegNet_Y_16GF_Weights.IMAGENET1K_V2},
-    'regnet_y_32gf': {'resolution': 224, 'model_fn': models.regnet_y_32gf, 'weights': models.RegNet_Y_32GF_Weights.IMAGENET1K_V2},
-    'regnet_y_128gf': {'resolution': 224, 'model_fn': models.regnet_y_128gf, 'weights': models.RegNet_Y_128GF_Weights.IMAGENET1K_SWAG_LINEAR_V1},
-    'vit_b_16': {'resolution': 224, 'model_fn': models.vit_b_16, 'weights': models.ViT_B_16_Weights.IMAGENET1K_V1},
-}
+# Function to resolve string paths to Python objects
+def resolve_path(path):
+    """Convert a string like 'module.submodule.function' to a Python callable object."""
+    module_name, obj_name = path.rsplit('.', 1)
+    module = __import__(module_name, fromlist=[obj_name])
+    return getattr(module, obj_name)
+
+# Function to resolve string paths to Python objects
+def resolve_path(path):
+    """Convert a string like 'module.submodule.function' to a Python callable object."""
+    try:
+        module_name, obj_name = path.rsplit('.', 1)
+        module = __import__(module_name, fromlist=[obj_name])
+        return getattr(module, obj_name)
+    except Exception as e:
+        raise ValueError(f"Failed to resolve path {path}: {e}")
+
+# Load MODEL_CONFIGS from YAML file
+def load_model_configs(yaml_path):
+    try:
+        with open(yaml_path, 'r') as file:
+            config = yaml.safe_load(file)
+        # Check if config has 'models' key (based on your previous YAML structure)
+        if 'models' in config:
+            config = config['models']  # Extract the 'models' section
+        model_configs = {}
+        for model_name, params in config.items():
+            model_configs[model_name] = {
+                'resolution': params['resolution'],
+                'model_fn': resolve_path(params['model_fn']),
+                'weights': resolve_path(params['weights'])
+            }
+        return model_configs
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Configuration file {yaml_path} not found.")
+    except Exception as e:
+        raise ValueError(f"Error loading YAML configuration: {e}")
 
 def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo', resolution=224):
     """Preprocess images using face alignment and cache them with specified resolution."""
@@ -275,6 +290,10 @@ class CustomTQDMProgressBar(TQDMProgressBar):
 def main(args):
     mp.set_start_method('spawn', force=True)
     
+    # Load model configurations using the provided config_path
+    global MODEL_CONFIGS
+    MODEL_CONFIGS = load_model_configs(args.image_classification_models_config_path)
+    
     # Get the resolution for the selected model
     if args.model_name not in MODEL_CONFIGS:
         raise ValueError(f"Model {args.model_name} not supported. Choose from {list(MODEL_CONFIGS.keys())}")
@@ -374,6 +393,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
     parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds',
                         help='Path to the dataset directory.')
+    parser.add_argument('--image_classification_models_config_path', type=str, default='./configs/image_classification_models_config.yaml',
+                        help='Path to the YAML configuration file for model configurations.')
     parser.add_argument('--batch_size', type=int, default=8,
                         help='Batch size for training and validation.')
     parser.add_argument('--num_epochs', type=int, default=100,
@@ -395,7 +416,7 @@ if __name__ == '__main__':
     parser.add_argument('--total_steps', type=int, default=0,
                         help='Total number of training steps (0 to use epochs * steps_per_epoch).')
     parser.add_argument('--model_name', type=str, default='efficientnet_b0',
-                        choices=list(MODEL_CONFIGS.keys()),
+                        choices=list(load_model_configs('./configs/image_classification_models_config.yaml').keys()),
                         help='Model to use for training.')
 
     args = parser.parse_args()
