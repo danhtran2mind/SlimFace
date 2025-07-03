@@ -32,6 +32,7 @@ def resolve_path(path):
     """Convert a string like 'module.submodule.function' to a Python callable object."""
     try:
         module_name, obj_name = path.rsplit('.', 1)
+        print("module_name, obj_name: ", module_name, obj_name)
         module = __import__("torchvision", module_name, fromlist=[obj_name])
         return getattr(module, obj_name)
     except Exception as e:
