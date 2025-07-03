@@ -295,12 +295,12 @@ def main(args):
     MODEL_CONFIGS = load_model_configs(args.image_classification_models_config_path)
     
     # Get the resolution for the selected model
-    if args.model_name not in MODEL_CONFIGS:
-        raise ValueError(f"Model {args.model_name} not supported. Choose from {list(MODEL_CONFIGS.keys())}")
-    resolution = MODEL_CONFIGS[args.model_name]['resolution']
+    if args.classification_model_name not in MODEL_CONFIGS:
+        raise ValueError(f"Model {args.classification_model_name} not supported. Choose from {list(MODEL_CONFIGS.keys())}")
+    resolution = MODEL_CONFIGS[args.classification_model_name]['resolution']
     
-    train_cache_dir = os.path.join(args.dataset_dir, f"train_data_aligned_{args.model_name}")
-    val_cache_dir = os.path.join(args.dataset_dir, f"val_data_aligned_{args.model_name}")
+    train_cache_dir = os.path.join(args.dataset_dir, f"train_data_aligned_{args.classification_model_name}")
+    val_cache_dir = os.path.join(args.dataset_dir, f"val_data_aligned_{args.classification_model_name}")
     print(f"Preprocessing training dataset with resolution {resolution}...")
     preprocess_and_cache_images(
         input_dir=os.path.join(args.dataset_dir, "train_data"),
@@ -349,8 +349,8 @@ def main(args):
     warmup_steps = int(args.warmup_steps * total_steps) if args.warmup_steps > 0 else int(0.05 * total_steps)
     
     # Load the appropriate model
-    model_fn = MODEL_CONFIGS[args.model_name]['model_fn']
-    weights = MODEL_CONFIGS[args.model_name]['weights']
+    model_fn = MODEL_CONFIGS[args.classification_model_name]['model_fn']
+    weights = MODEL_CONFIGS[args.classification_model_name]['weights']
     base_model = model_fn(weights=weights)
     for param in base_model.parameters():
         param.requires_grad = False
@@ -369,12 +369,12 @@ def main(args):
         warmup_steps=warmup_steps,
         total_steps=total_steps,
         max_lr_factor=args.max_lr_factor,
-        model_name=args.model_name
+        model_name=args.classification_model_name
     )
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath='./checkpoints',
-        filename=f'face_classifier_{args.model_name}-{{epoch:02d}}-{{val_loss:.2f}}',
+        filename=f'face_classifier_{args.classification_model_name}-{{epoch:02d}}-{{val_loss:.2f}}',
         save_top_k=1,
         mode='min'
     )
@@ -415,7 +415,7 @@ if __name__ == '__main__':
                         help='Fraction of total steps for warmup phase (e.g., 0.05 for 5%).')
     parser.add_argument('--total_steps', type=int, default=0,
                         help='Total number of training steps (0 to use epochs * steps_per_epoch).')
-    parser.add_argument('--model_name', type=str, default='efficientnet_b0',
+    parser.add_argument('--classification_model_name', type=str, default='efficientnet_b0',
                         choices=list(load_model_configs('./configs/image_classification_models_config.yaml').keys()),
                         help='Model to use for training.')
 
