@@ -24,7 +24,8 @@ from torchvision.models import (
     efficientnet_b6, EfficientNet_B6_Weights,
     efficientnet_b7, EfficientNet_B7_Weights
 )
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+
+# Append the parent directory's 'models/edgeface' folder to the system path to allow importing modules from that location
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 try:
     from face_alignment import align
@@ -236,14 +237,26 @@ class CustomTQDMProgressBar(TQDMProgressBar):
         items = super().get_metrics(trainer, pl_module)
         items["epoch"] = trainer.current_epoch + 1
         return items
+
     def init_train_tqdm(self):
         bar = super().init_train_tqdm()
         bar.set_description(f"Training Epoch {self.trainer.current_epoch + 1}")
         return bar
+
+    def init_validation_tqdm(self):
+        bar = super().init_validation_tqdm()
+        bar.set_description(f"Validating Epoch {self.trainer.current_epoch + 1}")
+        return bar
+
     def on_train_epoch_start(self, trainer, pl_module):
         super().on_train_epoch_start(trainer, pl_module)
         if self.train_progress_bar:
             self.train_progress_bar.set_description(f"Training Epoch {trainer.current_epoch + 1}")
+
+    def on_validation_epoch_start(self, trainer, pl_module):
+        super().on_validation_epoch_start(trainer, pl_module)
+        if self.val_progress_bar:
+            self.val_progress_bar.set_description(f"Validating Epoch {self.trainer.current_epoch + 1}")
 
 def main(args):
     mp.set_start_method('spawn', force=True)
@@ -293,6 +306,7 @@ def main(args):
         pin_memory=True,
         persistent_workers=True
     )
+    
     steps_per_epoch = len(train_loader)
     if steps_per_epoch == 0:
         raise ValueError("Train DataLoader is empty. Check dataset size or batch configuration.")
@@ -322,6 +336,7 @@ def main(args):
         save_top_k=1,
         mode='min'
     )
+    
     progress_bar = CustomTQDMProgressBar()
     trainer = Trainer(
         max_epochs=args.num_epochs,
