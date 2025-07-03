@@ -241,7 +241,7 @@ class CustomTQDMProgressBar(TQDMProgressBar):
         bar = super().init_train_tqdm()
         bar.set_description(f"Training Epoch {self.trainer.current_epoch + 1}")
         return bar
-     def init_validation_tqdm(self):
+    def init_validation_tqdm(self):
         bar = super().init_validation_tqdm()
         # Ensure total is set to avoid None issues during sanity check
         if self.trainer.sanity_checking:
