@@ -132,34 +132,30 @@ class FaceDataset(Dataset):
         return image, label
 
 class FaceClassifier(nn.Module):
-    """Face classification model with a convolutional head."""
+    """Simplified face classification model with a fully connected head."""
     def __init__(self, base_model, num_classes):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
-        # Determine the number of input channels for the conv head based on the base model
+        # Determine the embedding dimension from the base model
         with torch.no_grad():
             dummy_input = torch.zeros(1, 3, 224, 224)  # Temporary input to get feature size
-            features = base_model.features(dummy_input)
-            in_channels = features.shape[1]
-        self.conv_head = nn.Sequential(
-            nn.Conv2d(in_channels, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
-            nn.ReLU(),
-            nn.Dropout2d(0.5),
-            nn.Conv2d(512, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
-            nn.AdaptiveAvgPool2d(1),
+            features = self.base_model.features(dummy_input)
+            embedding_dim = features.shape[1] * features.shape[2] * features.shape[3]
+        self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(256, num_classes)
+            nn.Linear(embedding_dim, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, num_classes)
         )
 
     def forward(self, x):
-        # Extract feature maps from EfficientNet
+        # Extract feature maps from the base model
         features = self.base_model.features(x)
-        output = self.conv_head(features)
+        output = self.fc(features)
         return output
-
+        
 class FaceClassifierLightning(pl.LightningModule):
     """PyTorch Lightning module for face classification."""
     def __init__(self, base_model, num_classes, learning_rate, warmup_steps=1000, total_steps=100000, max_lr_factor=10.0):
