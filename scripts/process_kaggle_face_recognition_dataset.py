@@ -63,13 +63,13 @@ def download_and_split_kaggle_dataset(
             username, dataset_name = dataset_slug.split("/")
             if not (username and dataset_name):
                 raise ValueError("Invalid dataset slug format. Expected 'username/dataset-name'")
-
+        
             dataset_url = f"https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_name}"
             print(f"Downloading dataset {dataset_slug}...")
             response = requests.get(dataset_url, stream=True)
             if response.status_code != 200:
                 raise Exception(f"Failed to download dataset: {response.status_code}")
-
+        
             total_size = int(response.headers.get("content-length", 0))
             with open(zip_path, "wb") as file, tqdm(
                 desc="Downloading dataset",
@@ -82,15 +82,16 @@ def download_and_split_kaggle_dataset(
                     if chunk:
                         file.write(chunk)
                         pbar.update(len(chunk))
-
-        # # Check if raw directory contains files
-        # if os.path.exists(raw_dir) and any(os.listdir(raw_dir)):
-        #     print(f"Raw directory {raw_dir} already contains files, skipping extraction.")
-        # else:
-        # Extract dataset
-        print("Extracting dataset...")
-        with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(raw_dir)
+        
+        # Check if raw directory contains files, excluding the ZIP file
+        zip_filename = os.path.basename(zip_path)
+        if os.path.exists(raw_dir) and any(file != zip_filename for file in os.listdir(raw_dir)):
+            print(f"Raw directory {raw_dir} already contains files, skipping extraction.")
+        else:
+            # Extract dataset
+            print("Extracting dataset...")
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                zip_ref.extractall(raw_dir)
 
         # Define source directory
         source_dir = os.path.join(raw_dir, source_subdir)
@@ -162,7 +163,7 @@ def download_and_split_kaggle_dataset(
 
                 # Clean up temporary directory for this person
                 shutil.rmtree(temp_dir, ignore_errors=True)
-                print(f"Cleaned up temp directory for {person}")
+                print(f"\nCleaned up temp directory for {person}")
 
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
 
