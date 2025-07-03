@@ -36,12 +36,10 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         processed_dir = os.path.join(base_dir, "processed_ds")
         train_dir = os.path.join(processed_dir, "train_data")
         val_dir = os.path.join(processed_dir, "val_data")
-        temp_dir = os.path.join(processed_dir, "temp")
         zip_path = os.path.join(raw_dir, "dataset.zip")
         
         os.makedirs(raw_dir, exist_ok=True)
         os.makedirs(processed_dir, exist_ok=True)
-        os.makedirs(temp_dir, exist_ok=True)
 
         # Download dataset with progress bar
         username, dataset_name = dataset_slug.split('/')
@@ -104,8 +102,10 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         total_files = sum(len(images) for images in person_files.values())
         with tqdm(total=total_files, desc="Processing and copying files", unit="file") as pbar:
             for person, images in person_files.items():
+                # Set up directories for this person
                 train_person_dir = os.path.join(train_dir, person)
                 val_person_dir = os.path.join(val_dir, person)
+                temp_dir = os.path.join(processed_dir, "temp")
                 os.makedirs(train_person_dir, exist_ok=True)
                 os.makedirs(val_person_dir, exist_ok=True)
                 os.makedirs(temp_dir, exist_ok=True)
@@ -129,14 +129,14 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
 
                 # Verify files in temp directory
                 temp_files = os.listdir(temp_dir)
-                print(f"Files in temp_dir after processing {person}: {temp_files}")
+                # print(f"Files in temp_dir after processing {person}: {temp_files}")
 
                 # Split all images (original and augmented) for this person
                 train_images_filenames, val_images_filenames = train_test_split(
                     all_image_filenames, test_size=test_split_rate, random_state=random_state
                 )
-                print(f"Train images for {person}: {train_images_filenames}")
-                print(f"Validation images for {person}: {val_images_filenames}")
+                # print(f"Train images for {person}: {train_images_filenames}")
+                # print(f"Validation images for {person}: {val_images_filenames}")
 
                 # Move images to final train/val directories
                 for img in all_image_filenames:
@@ -148,11 +148,12 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                         dst = os.path.join(train_person_dir, img)
                     else:
                         dst = os.path.join(val_person_dir, img)
-                    print(f"Moving {src} to {dst}")
+                    # print(f"Moving {src} to {dst}")
                     os.rename(src, dst)
 
-        # Clean up temporary directory
-        shutil.rmtree(temp_dir, ignore_errors=True)
+                # Clean up temporary directory for this person
+                shutil.rmtree(temp_dir, ignore_errors=True)
+                print(f"Cleaned up temp directory for {person}")
 
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
 
