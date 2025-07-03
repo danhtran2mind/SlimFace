@@ -50,7 +50,7 @@ def load_model_configs(yaml_path):
             model_configs[model_name] = {
                 'resolution': params['resolution'],
                 'model_fn': resolve_path(params['model_fn']),
-                'weights': resolve_path(params['weights'])
+                # 'weights': resolve_path(params['weights'])
             }
         return model_configs
     except FileNotFoundError:
