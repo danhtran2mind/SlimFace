@@ -2,6 +2,7 @@ import os
 import sys
 import torch
 import torch.nn as nn
+import torchvision
 import torch.multiprocessing as mp
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
@@ -31,7 +32,7 @@ def resolve_path(path):
     """Convert a string like 'module.submodule.function' to a Python callable object."""
     try:
         module_name, obj_name = path.rsplit('.', 1)
-        module = __import__(module_name, fromlist=[obj_name])
+        module = __import__("torchvision", module_name, fromlist=[obj_name])
         return getattr(module, obj_name)
     except Exception as e:
         raise ValueError(f"Failed to resolve path {path}: {e}")
