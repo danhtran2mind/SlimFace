@@ -115,18 +115,28 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                 # Process images and create augmentations before splitting
                 for img in images:
                     src_path = os.path.join(source_dir, person, img)
+                    print(f"Processing image: {src_path}")
+                    
                     # Append original image filename
-                    all_image_filenames.append(os.path.basename(src_path))
+                    original_filename = os.path.basename(src_path)
+                    all_image_filenames.append(original_filename)
                     
                     # Process and save images (original and augmented) to temp directory
                     saved_images = process_image(src_path, temp_dir, aug if augment else None)
+                    print(f"Saved images from process_image: {saved_images}")
                     all_image_filenames.extend(saved_images)
                     pbar.update(1)
+
+                # Verify files in temp directory
+                temp_files = os.listdir(temp_dir)
+                print(f"Files in temp_dir after processing {person}: {temp_files}")
 
                 # Split all images (original and augmented) for this person
                 train_images_filenames, val_images_filenames = train_test_split(
                     all_image_filenames, test_size=test_split_rate, random_state=random_state
                 )
+                print(f"Train images for {person}: {train_images_filenames}")
+                print(f"Validation images for {person}: {val_images_filenames}")
 
                 # Move images to final train/val directories
                 for img in all_image_filenames:
@@ -138,6 +148,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                         dst = os.path.join(train_person_dir, img)
                     else:
                         dst = os.path.join(val_person_dir, img)
+                    print(f"Moving {src} to {dst}")
                     os.rename(src, dst)
 
         # Clean up temporary directory
