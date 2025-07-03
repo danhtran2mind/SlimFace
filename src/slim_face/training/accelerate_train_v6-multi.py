@@ -18,10 +18,10 @@ import torchvision.models as models
 import yaml
 
 # Append the parent directory's 'models/edgeface' folder to the system path
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'face_detection_models')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 try:
     from face_alignment import align
-    from backbones import get_model    
 except ImportError:
     print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
     align = None
