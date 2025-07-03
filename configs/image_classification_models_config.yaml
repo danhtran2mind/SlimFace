@@ -1,13 +1,17 @@
 # For more details on models, see https://pytorch.org/vision/main/models.html
+
+# EfficientNet models: Designed for efficiency with compound scaling of depth, width, and resolution.
+# These models balance accuracy and computational efficiency, ideal for resource-constrained environments.
 efficientnet_b0:
   metrics:
-    Acc@1: 77.692
-    Acc@5: 93.532
-    GFLOPS: 0.39
-    Params: 5.3M
+    Acc@1: 77.692  # Top-1 accuracy on ImageNet
+    Acc@5: 93.532  # Top-5 accuracy on ImageNet
+    GFLOPS: 0.39   # Computational complexity
+    Params: 5.3M   # Number of parameters
   model_fn: models.efficientnet_b0
-  resolution: 224
-  weights: models.EfficientNet_B0_Weights.IMAGENET1K_V1
+  resolution: 224  # Input image resolution
+  weights: models.EfficientNet_B0_Weights.IMAGENET1K_V1  # Pretrained weights on ImageNet
+
 efficientnet_b1:
   metrics:
     Acc@1: 78.642
@@ -17,6 +21,7 @@ efficientnet_b1:
   model_fn: models.efficientnet_b1
   resolution: 240
   weights: models.EfficientNet_B1_Weights.IMAGENET1K_V1
+
 efficientnet_b2:
   metrics:
     Acc@1: 80.608
@@ -26,6 +31,7 @@ efficientnet_b2:
   model_fn: models.efficientnet_b2
   resolution: 260
   weights: models.EfficientNet_B2_Weights.IMAGENET1K_V1
+
 efficientnet_b3:
   metrics:
     Acc@1: 82.008
@@ -35,6 +41,7 @@ efficientnet_b3:
   model_fn: models.efficientnet_b3
   resolution: 300
   weights: models.EfficientNet_B3_Weights.IMAGENET1K_V1
+
 efficientnet_b4:
   metrics:
     Acc@1: 83.384
@@ -44,6 +51,7 @@ efficientnet_b4:
   model_fn: models.efficientnet_b4
   resolution: 380
   weights: models.EfficientNet_B4_Weights.IMAGENET1K_V1
+
 efficientnet_b5:
   metrics:
     Acc@1: 83.444
@@ -53,6 +61,7 @@ efficientnet_b5:
   model_fn: models.efficientnet_b5
   resolution: 456
   weights: models.EfficientNet_B5_Weights.IMAGENET1K_V1
+
 efficientnet_b6:
   metrics:
     Acc@1: 84.008
@@ -62,6 +71,7 @@ efficientnet_b6:
   model_fn: models.efficientnet_b6
   resolution: 528
   weights: models.EfficientNet_B6_Weights.IMAGENET1K_V1
+
 efficientnet_b7:
   metrics:
     Acc@1: 84.122
@@ -71,6 +81,9 @@ efficientnet_b7:
   model_fn: models.efficientnet_b7
   resolution: 600
   weights: models.EfficientNet_B7_Weights.IMAGENET1K_V1
+
+# EfficientNet V2 models: Improved training efficiency and performance over V1.
+# These models use progressive learning and optimized scaling for better accuracy.
 efficientnet_v2_l:
   metrics:
     Acc@1: 85.808
@@ -80,6 +93,7 @@ efficientnet_v2_l:
   model_fn: models.efficientnet_v2_l
   resolution: 480
   weights: models.EfficientNet_V2_L_Weights.IMAGENET1K_V1
+
 efficientnet_v2_m:
   metrics:
     Acc@1: 85.112
@@ -89,6 +103,7 @@ efficientnet_v2_m:
   model_fn: models.efficientnet_v2_m
   resolution: 480
   weights: models.EfficientNet_V2_M_Weights.IMAGENET1K_V1
+
 efficientnet_v2_s:
   metrics:
     Acc@1: 84.228
@@ -98,15 +113,19 @@ efficientnet_v2_s:
   model_fn: models.efficientnet_v2_s
   resolution: 384
   weights: models.EfficientNet_V2_S_Weights.IMAGENET1K_V1
+
+# RegNet models: Designed for scalability and efficiency with a focus on network design.
+# These models optimize for both accuracy and computational efficiency.
 regnet_y_128gf:
   metrics:
-    Acc@1: 86.068
+    Acc@1: 86.068  # High accuracy but computationally expensive
     Acc@5: 97.844
     GFLOPS: 127.52
     Params: 644.8M
   model_fn: models.regnet_y_128gf
   resolution: 224
   weights: models.RegNet_Y_128GF_Weights.IMAGENET1K_SWAG_LINEAR_V1
+
 regnet_y_16gf:
   metrics:
     Acc@1: 82.886
@@ -116,6 +135,7 @@ regnet_y_16gf:
   model_fn: models.regnet_y_16gf
   resolution: 224
   weights: models.RegNet_Y_16GF_Weights.IMAGENET1K_V2
+
 regnet_y_1_6gf:
   metrics:
     Acc@1: 80.876
@@ -125,6 +145,7 @@ regnet_y_1_6gf:
   model_fn: models.regnet_y_1_6gf
   resolution: 224
   weights: models.RegNet_Y_1_6GF_Weights.IMAGENET1K_V2
+
 regnet_y_32gf:
   metrics:
     Acc@1: 83.368
@@ -134,6 +155,7 @@ regnet_y_32gf:
   model_fn: models.regnet_y_32gf
   resolution: 224
   weights: models.RegNet_Y_32GF_Weights.IMAGENET1K_V2
+
 regnet_y_3_2gf:
   metrics:
     Acc@1: 81.982
@@ -143,6 +165,7 @@ regnet_y_3_2gf:
   model_fn: models.regnet_y_3_2gf
   resolution: 224
   weights: models.RegNet_Y_3_2GF_Weights.IMAGENET1K_V2
+
 regnet_y_400mf:
   metrics:
     Acc@1: 75.804
@@ -152,6 +175,7 @@ regnet_y_400mf:
   model_fn: models.regnet_y_400mf
   resolution: 224
   weights: models.RegNet_Y_400MF_Weights.IMAGENET1K_V2
+
 regnet_y_800mf:
   metrics:
     Acc@1: 78.828
@@ -161,6 +185,7 @@ regnet_y_800mf:
   model_fn: models.regnet_y_800mf
   resolution: 224
   weights: models.RegNet_Y_800MF_Weights.IMAGENET1K_V2
+
 regnet_y_8gf:
   metrics:
     Acc@1: 82.828
@@ -170,12 +195,55 @@ regnet_y_8gf:
   model_fn: models.regnet_y_8gf
   resolution: 224
   weights: models.RegNet_Y_8GF_Weights.IMAGENET1K_V2
+
+# Vision Transformer (ViT) models: Transformer-based architecture for image classification.
+# These models excel in capturing long-range dependencies but require significant compute for larger variants.
 vit_b_16:
   metrics:
-    Acc@1: 81.072
+    Acc@1: 81.072  # Base ViT model with balanced accuracy and efficiency
     Acc@5: 95.318
     GFLOPS: 17.56
     Params: 86.6M
   model_fn: models.vit_b_16
   resolution: 224
   weights: models.ViT_B_16_Weights.IMAGENET1K_V1
+
+vit_b_32:
+  metrics:
+    Acc@1: 75.912  # Smaller patch size version of ViT, lower accuracy but fewer computations
+    Acc@5: 92.466
+    GFLOPS: 4.41
+    Params: 88.2M
+  model_fn: models.vit_b_32
+  resolution: 224
+  weights: models.ViT_B_32_Weights.IMAGENET1K_V1
+
+vit_h_14:
+  metrics:
+    Acc@1: 88.552  # High-performance ViT model with very high accuracy and computational cost
+    Acc@5: 98.694
+    GFLOPS: 1016.72
+    Params: 633.5M
+  model_fn: models.vit_h_14
+  resolution: 224
+  weights: models.ViT_H_14_Weights.IMAGENET1K_SWAG_E2E_V1
+
+vit_l_16:
+  metrics:
+    Acc@1: 79.662  # Larger ViT model with improved accuracy over base models
+    Acc@5: 94.638
+    GFLOPS: 61.55
+    Params: 304.3M
+  model_fn: models.vit_l_16
+  resolution: 224
+  weights: models.ViT_L_16_Weights.IMAGENET1K_V1
+
+vit_l_32:
+  metrics:
+    Acc@1: 76.972  # Larger ViT with larger patch size, trading accuracy for reduced compute
+    Acc@5: 93.07
+    GFLOPS: 15.38
+    Params: 306.5M
+  model_fn: models.vit_l_32
+  resolution: 224
+  weights: models.ViT_L_32_Weights.IMAGENET1K_V1
