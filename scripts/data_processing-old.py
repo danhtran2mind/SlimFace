@@ -4,7 +4,7 @@ import os
 import imgaug.augmenters as iaa
 import random
 
-RANDOM_RATIO = 0.5
+RANDOM_RATIO = 1.0#0.5
 
 def process_image(src_path, dest_dir, aug=None):
     """
