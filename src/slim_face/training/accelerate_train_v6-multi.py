@@ -121,71 +121,8 @@ class FaceDataset(Dataset):
             image = self.transform(image)
         return image, label
 
-# class FaceClassifier(nn.Module):
-#     """Face classification model with a convolutional head."""
-#     def __init__(self, base_model, num_classes, model_name):
-#         super(FaceClassifier, self).__init__()
-#         self.base_model = base_model
-#         self.model_name = model_name
-        
-#         # Determine the feature extraction method based on model type
-#         if 'efficientnet' in model_name:
-#             with torch.no_grad():
-#                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
-#                 features = base_model.features(dummy_input)
-#                 in_channels = features.shape[1]
-#             self.feature_dim = in_channels
-#         elif 'regnet' in model_name:
-#             with torch.no_grad():
-#                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
-#                 features = base_model.features(dummy_input) if hasattr(base_model, 'features') else base_model(dummy_input)
-#                 in_channels = features.shape[1]
-#             self.feature_dim = in_channels
-#         elif 'vit' in model_name:
-#             with torch.no_grad():
-#                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
-#                 features = base_model(dummy_input)
-#                 in_channels = features.shape[-1]
-#             self.feature_dim = in_channels
-#         else:
-#             raise ValueError(f"Unsupported model type: {model_name}")
-
-#         # Define the classifier head
-#         if 'vit' in model_name:
-#             self.conv_head = nn.Sequential(
-#                 nn.Linear(self.feature_dim, 512),
-#                 nn.BatchNorm1d(512),
-#                 nn.ReLU(),
-#                 nn.Dropout(0.5),
-#                 nn.Linear(512, 256),
-#                 nn.BatchNorm1d(256),
-#                 nn.ReLU(),
-#                 nn.Linear(256, num_classes)
-#             )
-#         else:
-#             self.conv_head = nn.Sequential(
-#                 nn.Conv2d(self.feature_dim, 512, kernel_size=3, padding=1),
-#                 nn.BatchNorm2d(512),
-#                 nn.ReLU(),
-#                 nn.Dropout2d(0.5),
-#                 nn.Conv2d(512, 256, kernel_size=3, padding=1),
-#                 nn.BatchNorm2d(256),
-#                 nn.ReLU(),
-#                 nn.AdaptiveAvgPool2d(1),
-#                 nn.Flatten(),
-#                 nn.Linear(256, num_classes)
-#             )
-
-#     def forward(self, x):
-#         if 'vit' in self.model_name:
-#             features = self.base_model(x)
-#             output = self.conv_head(features)
-#         else:
-#             features = self.base_model.features(x) if hasattr(self.base_model, 'features') else self.base_model(x)
-#             output = self.conv_head(features)
-#         return output
-
 class FaceClassifier(nn.Module):
+    """Face classification model with a convolutional head."""
     def __init__(self, base_model, num_classes, model_name):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
@@ -239,6 +176,15 @@ class FaceClassifier(nn.Module):
                 nn.Linear(256, num_classes)
             )
 
+    def forward(self, x):
+        if 'vit' in self.model_name:
+            features = self.base_model(x)
+            output = self.conv_head(features)
+        else:
+            features = self.base_model.features(x) if hasattr(self.base_model, 'features') else self.base_model(x)
+            output = self.conv_head(features)
+        return output
+
 class FaceClassifierLightning(pl.LightningModule):
     """PyTorch Lightning module for face classification."""
     def __init__(self, base_model, num_classes, learning_rate, warmup_steps=1000, total_steps=100000, max_lr_factor=10.0, model_name='efficientnet_b0'):
@@ -289,7 +235,7 @@ class FaceClassifierLightning(pl.LightningModule):
               f"Learning rate: {current_lr:.6e}")
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.conv_head.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam minimo(self.model.conv_head.parameters(), lr=self.learning_rate)
         def lr_lambda(step):
             if step < self.warmup_steps:
                 return (self.max_lr - self.learning_rate) / self.warmup_steps * step + self.learning_rate
