@@ -107,7 +107,6 @@ def download_and_split_kaggle_dataset(
                     if os.path.isfile(os.path.join(person_dir, f))
                     and f.lower().endswith((".png", ".jpg", ".jpeg"))
                 ]
-            break  # Note: This may be intentional; remove if all persons should be processed
 
         # Define augmentation pipeline
         if augment:
