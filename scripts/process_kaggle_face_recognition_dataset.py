@@ -119,8 +119,8 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                     # print(f"Processing image: {src_path}")
                     
                     # Append original image filename
-                    original_filename = os.path.basename(src_path)
-                    all_image_filenames.append(original_filename)
+                    # original_filename = os.path.basename(src_path)
+                    # all_image_filenames.append(original_filename)
                     
                     # Process and save images (original and augmented) to temp directory
                     saved_images = process_image(src_path, temp_dir, aug if augment else None)
