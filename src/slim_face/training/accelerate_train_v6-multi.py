@@ -186,48 +186,58 @@ class FaceDataset(Dataset):
 #         return output
 
 class FaceClassifier(nn.Module):
-    """Simplified face classification model with a fully connected head."""
     def __init__(self, base_model, num_classes, model_name):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
         self.model_name = model_name
-
-        # Determine the embedding dimension based on model type
+        
+        # Determine the feature extraction method based on model type
         if 'efficientnet' in model_name:
             with torch.no_grad():
                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
                 features = base_model.features(dummy_input)
-                embedding_dim = features.shape[1] * features.shape[2] * features.shape[3]
+                in_channels = features.shape[1]
+            self.feature_dim = in_channels
         elif 'regnet' in model_name:
             with torch.no_grad():
                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
                 features = base_model.features(dummy_input) if hasattr(base_model, 'features') else base_model(dummy_input)
-                embedding_dim = features.shape[1] * features.shape[2] * features.shape[3]
+                in_channels = features.shape[1]
+            self.feature_dim = in_channels
         elif 'vit' in model_name:
             with torch.no_grad():
                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
                 features = base_model(dummy_input)
-                embedding_dim = features.shape[-1]
+                in_channels = features.shape[-1]
+            self.feature_dim = in_channels
         else:
             raise ValueError(f"Unsupported model type: {model_name}")
 
-        # Define the simplified fully connected classifier head
-        self.fc = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(embedding_dim, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
-        )
-
-    def forward(self, x):
-        if 'vit' in self.model_name:
-            features = self.base_model(x)
+        # Define the classifier head
+        if 'vit' in model_name:
+            self.conv_head = nn.Sequential(
+                nn.Linear(self.feature_dim, 512),
+                nn.BatchNorm1d(512),
+                nn.ReLU(),
+                nn.Dropout(0.5),
+                nn.Linear(512, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, num_classes)
+            )
         else:
-            features = self.base_model.features(x) if hasattr(self.base_model, 'features') else self.base_model(x)
-        output = self.fc(features)
-        return output
+            self.conv_head = nn.Sequential(
+                nn.Conv2d(self.feature_dim, 512, kernel_size=3, padding=1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Dropout2d(0.5),
+                nn.Conv2d(512, 256, kernel_size=3, padding=1),
+                nn.BatchNorm2d(256),
+                nn.ReLU(),
+                nn.AdaptiveAvgPool2d(1),
+                nn.Flatten(),
+                nn.Linear(256, num_classes)
+            )
 
 class FaceClassifierLightning(pl.LightningModule):
     """PyTorch Lightning module for face classification."""
