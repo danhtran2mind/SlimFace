@@ -115,7 +115,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                 # Process images and create augmentations before splitting
                 for img in images:
                     src_path = os.path.join(source_dir, person, img)
-                    print(f"Processing image: {src_path}")
+                    # print(f"Processing image: {src_path}")
                     
                     # Append original image filename
                     original_filename = os.path.basename(src_path)
@@ -123,7 +123,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                     
                     # Process and save images (original and augmented) to temp directory
                     saved_images = process_image(src_path, temp_dir, aug if augment else None)
-                    print(f"Saved images from process_image: {saved_images}")
+                    # print(f"Saved images from process_image: {saved_images}")
                     all_image_filenames.extend(saved_images)
                     pbar.update(1)
 
