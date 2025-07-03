@@ -83,14 +83,14 @@ def download_and_split_kaggle_dataset(
                         file.write(chunk)
                         pbar.update(len(chunk))
 
-        # Check if raw directory contains files
-        if os.path.exists(raw_dir) and any(os.listdir(raw_dir)):
-            print(f"Raw directory {raw_dir} already contains files, skipping extraction.")
-        else:
-            # Extract dataset
-            print("Extracting dataset...")
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                zip_ref.extractall(raw_dir)
+        # # Check if raw directory contains files
+        # if os.path.exists(raw_dir) and any(os.listdir(raw_dir)):
+        #     print(f"Raw directory {raw_dir} already contains files, skipping extraction.")
+        # else:
+        # Extract dataset
+        print("Extracting dataset...")
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(raw_dir)
 
         # Define source directory
         source_dir = os.path.join(raw_dir, source_subdir)
