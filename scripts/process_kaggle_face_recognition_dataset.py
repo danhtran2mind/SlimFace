@@ -103,7 +103,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         if augment:
             aug = iaa.Sequential([
                 iaa.Fliplr(p=1.0),  # Always flip images horizontally
-                iaa.Sometimes(p=0.5,  # Apply the following with 50% probability
+                iaa.Sometimes(0.5,  # Apply the following with 50% probability
                     iaa.Affine(
                         rotate=(-rotation_range, rotation_range)  # Random rotation within ±degrees
                     )
