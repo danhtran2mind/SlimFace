@@ -84,7 +84,8 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                     f for f in os.listdir(person_dir)
                     if os.path.isfile(os.path.join(person_dir, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))
                 ]
-
+            break
+            
         # Define augmentation pipeline
         if augment:
             aug = iaa.Sequential([
