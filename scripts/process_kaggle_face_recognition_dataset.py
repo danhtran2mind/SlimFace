@@ -101,16 +101,16 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
 
         # Define augmentation pipeline
         if augment:
-        aug = iaa.Sequential([
-            iaa.Fliplr(p=1.0),  # Always flip images horizontally
-            iaa.Sometimes(0.5,  # Apply the following with 50% probability
-                iaa.Affine(
-                    rotate=(-rotation_range, rotation_range)  # Random rotation within ±degrees
+            aug = iaa.Sequential([
+                iaa.Fliplr(p=1.0),  # Always flip images horizontally
+                iaa.Sometimes(0.5,  # Apply the following with 50% probability
+                    iaa.Affine(
+                        rotate=(-rotation_range, rotation_range)  # Random rotation within ±degrees
+                    )
                 )
-            )
-        ])
-    else:
-        aug = None
+            ])
+        else:
+            aug = None
 
         # Process and split files with progress bar
         total_files = sum(len(images) for images in person_files.values())
