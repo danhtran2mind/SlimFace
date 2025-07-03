@@ -5,7 +5,7 @@ import imgaug.augmenters as iaa
 import random
 import uuid
 
-RANDOM_RATIO = 1.0 # 0.5
+RANDOM_RATIO = 0.5 # 0.5
 # TARGET_SIZE = (224, 224)  # Standard size for face recognition models
 
 def process_image(src_path, dest_dir, aug=None):
