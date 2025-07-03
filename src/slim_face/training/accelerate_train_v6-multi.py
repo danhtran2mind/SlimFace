@@ -15,8 +15,9 @@ from tqdm import tqdm
 import math
 from torch.optim.lr_scheduler import LambdaLR
 import torchvision.models as models
+import yaml
 
-# Append the parent directory's 'models/edgeface' folder to the system path to allow importing modules from that location
+# Append the parent directory's 'models/edgeface' folder to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
 try:
     from face_alignment import align
@@ -24,14 +25,6 @@ try:
 except ImportError:
     print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
     align = None
-
-# Mapping of model names to their input resolutions and weights
-# Function to resolve string paths to Python objects
-def resolve_path(path):
-    """Convert a string like 'module.submodule.function' to a Python callable object."""
-    module_name, obj_name = path.rsplit('.', 1)
-    module = __import__(module_name, fromlist=[obj_name])
-    return getattr(module, obj_name)
 
 # Function to resolve string paths to Python objects
 def resolve_path(path):
@@ -48,9 +41,8 @@ def load_model_configs(yaml_path):
     try:
         with open(yaml_path, 'r') as file:
             config = yaml.safe_load(file)
-        # Check if config has 'models' key (based on your previous YAML structure)
         if 'models' in config:
-            config = config['models']  # Extract the 'models' section
+            config = config['models']
         model_configs = {}
         for model_name, params in config.items():
             model_configs[model_name] = {
@@ -268,6 +260,18 @@ class FaceClassifierLightning(pl.LightningModule):
             }
         }
 
+    def save_full_model(self, save_path):
+        """Save the full model (base_model + conv_head)."""
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        torch.save(self.model.state_dict(), save_path)
+        print(f"Full model saved to {save_path}")
+
+    def save_classifier_head(self, save_path):
+        """Save only the classifier head (conv_head)."""
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        torch.save(self.model.conv_head.state_dict(), save_path)
+        print(f"Classifier head saved to {save_path}")
+
 class CustomModelCheckpoint(ModelCheckpoint):
     def format_checkpoint_name(self, metrics, ver=None):
         metrics['epoch'] = metrics.get('epoch', 0) + 1
@@ -388,6 +392,13 @@ def main(args):
         log_every_n_steps=10
     )
     trainer.fit(model, train_loader, val_loader)
+    
+    # Save the full model and classifier head after training
+    full_model_save_path = os.path.join('./checkpoints', f'face_classifier_{args.classification_model_name}_full_model.pth')
+    classifier_head_save_path = os.path.join('./checkpoints', f'face_classifier_{args.classification_model_name}_conv_head.pth')
+    
+    model.save_full_model(full_model_save_path)
+    model.save_classifier_head(classifier_head_save_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a face classification model with PyTorch Lightning.')
