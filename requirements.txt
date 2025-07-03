@@ -12,3 +12,4 @@ scikit-learn
 pillow
 requests
 ultralytics
+huggingface-hub
