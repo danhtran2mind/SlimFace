@@ -235,7 +235,7 @@ class FaceClassifierLightning(pl.LightningModule):
               f"Learning rate: {current_lr:.6e}")
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam minimo(self.model.conv_head.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(self.model.conv_head.parameters(), lr=self.learning_rate)
         def lr_lambda(step):
             if step < self.warmup_steps:
                 return (self.max_lr - self.learning_rate) / self.warmup_steps * step + self.learning_rate
