@@ -103,7 +103,7 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         if augment:
             aug = iaa.Sequential([
                 iaa.Fliplr(p=1.0),  # Always flip images horizontally
-                iaa.Sometimes(0.5,  # Apply the following with 50% probability
+                iaa.Sometimes(p=0.5,  # Apply the following with 50% probability
                     iaa.Affine(
                         rotate=(-rotation_range, rotation_range)  # Random rotation within ±degrees
                     )
@@ -126,24 +126,58 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
                     images, test_size=test_split_rate, random_state=random_state
                 )
 
-                # Process images
+                # # Process images
+                # all_image_filenames = []
+                # for img in images:
+                #     src_path = os.path.join(source_dir, person, img)
+                #     saved_images = process_image(src_path, temp_dir, aug if img in train_images else None)
+                #     all_image_filenames.extend(saved_images)
+                #     pbar.update(1)
+
+                # # Move images to final directories
+                # for img in all_image_filenames:
+                #     src = os.path.join(temp_dir, img)
+                #     if not os.path.exists(src):
+                #         print(f"Warning: File {src} not found, skipping.")
+                #         continue
+                #     if any(img in train_img or f"aug_{train_img}" == img for train_img in train_images):
+                #         dst = os.path.join(train_person_dir, img)
+                #     else:
+                #         dst = os.path.join(val_person_dir, img)
+                #     os.rename(src, dst)
+
                 all_image_filenames = []
+    
+                # Ensure directories exist
+                train_person_dir = os.path.join(train_dir, person)
+                val_person_dir = os.path.join(val_dir, person)
+                os.makedirs(train_person_dir, exist_ok=True)
+                os.makedirs(val_person_dir, exist_ok=True)
+                os.makedirs(temp_dir, exist_ok=True)
+            
+                # Process images
                 for img in images:
                     src_path = os.path.join(source_dir, person, img)
+                    # Append original image path
+                    all_image_filenames.append(os.path.basename(src_path))
+                    
+                    # Process and save images (original and augmented) to temp directory
                     saved_images = process_image(src_path, temp_dir, aug if img in train_images else None)
                     all_image_filenames.extend(saved_images)
-                    pbar.update(1)
-
-                # Move images to final directories
+            
+                # Split and move images to final train/val directories
                 for img in all_image_filenames:
                     src = os.path.join(temp_dir, img)
                     if not os.path.exists(src):
                         print(f"Warning: File {src} not found, skipping.")
                         continue
-                    if any(img in train_img or f"aug_{train_img}" == img for train_img in train_images):
-                        dst = os.path.join(train_person_dir, img)
-                    else:
-                        dst = os.path.join(val_person_dir, img)
+                        
+                    # Check if image is original or augmented training image
+                    is_train = any(img == train_img or img.startswith(f"aug_{os.path.splitext(train_img)[0]}") 
+                                  for train_img in train_images)
+                    
+                    # Move to appropriate directory
+                    dst = os.path.join(train_person_dir if is_train else val_person_dir, img)
                     os.rename(src, dst)
 
         # Clean up temporary directory
