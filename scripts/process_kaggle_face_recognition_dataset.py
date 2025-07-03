@@ -102,8 +102,9 @@ def download_and_split_kaggle_dataset(dataset_slug, base_dir="data", augment=Fal
         # Define augmentation pipeline
         if augment:
             aug = iaa.Sequential([
-                iaa.Fliplr(p=0.5),  # Horizontally flip images with 50% probability
+                iaa.Fliplr(p=1.0), 
                 iaa.Affine(
+                    p=0.5,  # Horizontally flip images with 50% probability
                     rotate=(-rotation_range, rotation_range),  # Random rotation within ±degrees
                 )
             ])
