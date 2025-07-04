@@ -201,9 +201,11 @@ class FaceDataset(Dataset):
 
 class FaceClassifierLightning(pl.LightningModule):
     """PyTorch Lightning module for face classification."""
-    def __init__(self, base_model, num_classes, learning_rate, warmup_steps=1000, total_steps=100000, max_lr_factor=10.0, model_name='efficientnet_b0'):
+    def __init__(self, base_model, num_classes, learning_rate,
+                 warmup_steps=1000, total_steps=100000, max_lr_factor=10.0,
+                 model_name='efficientnet_b0'):
         super(FaceClassifierLightning, self).__init__()
-        self.model = FaceClassifier(base_model, num_classes, model_name)
+        self.model = FaceClassifier(base_model, num_classes, model_name, MODEL_CONFIGS)
         self.criterion = nn.CrossEntropyLoss()
         self.learning_rate = learning_rate
         self.warmup_steps = warmup_steps
@@ -383,10 +385,13 @@ def main(args):
         max_lr_factor=args.max_lr_factor,
         model_name=args.classification_model_name
     )
+
+    ckpts_backup_dir = './ckpts/ckpts_backup'
+    os.makedirs(ckpts_backup_dir, exist_ok=True)
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
-        dirpath='./checkpoints',
-        filename=f'face_classifier_{args.classification_model_name}-{{epoch:02d}}-{{val_loss:.2f}}',
+        dirpath=ckpts_backup_dir,
+        filename=f'slim_face_{args.classification_model_name}_{{epoch:02d}}_{{val_loss:.2f}}',
         save_top_k=1,
         mode='min'
     )
@@ -402,8 +407,8 @@ def main(args):
     trainer.fit(model, train_loader, val_loader)
     
     # Save the full model and classifier head after training
-    full_model_save_path = os.path.join('./checkpoints', f'face_classifier_{args.classification_model_name}_full_model.pth')
-    classifier_head_save_path = os.path.join('./checkpoints', f'face_classifier_{args.classification_model_name}_conv_head.pth')
+    full_model_save_path = os.path.join('./ckpts', f'slim_face_{args.classification_model_name}_full_model.pth')
+    classifier_head_save_path = os.path.join('./ckpts', f'slim_face_{args.classification_model_name}_conv_head.pth')
     
     model.save_full_model(full_model_save_path)
     model.save_classifier_head(classifier_head_save_path)

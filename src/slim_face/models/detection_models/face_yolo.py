@@ -8,7 +8,7 @@ import sys
 import argparse
 import torch
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from utils import download_yolo_face_detection
 

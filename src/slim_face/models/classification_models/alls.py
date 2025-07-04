@@ -3,14 +3,14 @@ import torch.nn as nn
 
 class FaceClassifier(nn.Module):
     """Face classification model with a configurable head."""
-    def __init__(self, base_model, num_classes, model_name):
+    def __init__(self, base_model, num_classes, model_name, model_configs):
         super(FaceClassifier, self).__init__()
         self.base_model = base_model
         self.model_name = model_name
         
         # Determine the feature extraction method and output shape
         with torch.no_grad():
-            dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
+            dummy_input = torch.zeros(1, 3, model_configs[model_name]['resolution'], model_configs[model_name]['resolution'])
             features = base_model(dummy_input)
             if len(features.shape) == 4:  # Spatial feature map (batch, channels, height, width)
                 in_channels = features.shape[1]
