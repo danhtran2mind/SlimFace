@@ -20,11 +20,13 @@ def download_and_split_kaggle_dataset(
     random_state=42,
     test_split_rate=0.2,
     rotation_range=15,
-    source_subdir="Original Images/Original Images"
+    source_subdir="Original Images/Original Images",
+    delete_raw=False
 ):
     """Download a Kaggle dataset, split it into train/validation sets, and process images for face recognition.
 
     Skips downloading if ZIP exists and unzipping if raw folder contains files.
+    Optionally deletes the raw folder to save storage.
 
     Args:
         dataset_slug (str): Dataset slug in 'username/dataset-name' format.
@@ -34,6 +36,7 @@ def download_and_split_kaggle_dataset(
         test_split_rate (float): Proportion of data to use for validation (between 0 and 1).
         rotation_range (int): Maximum rotation angle in degrees for augmentation.
         source_subdir (str): Subdirectory within raw_dir containing images.
+        delete_raw (bool): Whether to delete the raw folder after processing to save storage.
 
     Raises:
         ValueError: If test_split_rate is not between 0 and 1 or dataset_slug is invalid.
@@ -165,6 +168,12 @@ def download_and_split_kaggle_dataset(
                 shutil.rmtree(temp_dir, ignore_errors=True)
                 print(f"\nCleaned up temp directory for {person}")
 
+        # Optionally delete raw folder to save storage
+        if delete_raw:
+            print(f"Deleting raw folder {raw_dir} to save storage...")
+            shutil.rmtree(raw_dir, ignore_errors=True)
+            print(f"Raw folder {raw_dir} deleted.")
+
         print(f"Dataset {dataset_slug} downloaded, extracted, processed, and split successfully!")
 
     except Exception as e:
@@ -214,6 +223,11 @@ if __name__ == "__main__":
         default="Original Images/Original Images",
         help="Subdirectory within raw_dir containing images"
     )
+    parser.add_argument(
+        "--delete_raw",
+        action="store_true",
+        help="Delete the raw folder after processing to save storage"
+    )
 
     args = parser.parse_args()
 
@@ -224,5 +238,6 @@ if __name__ == "__main__":
         random_state=args.random_state,
         test_split_rate=args.test_split_rate,
         rotation_range=args.rotation_range,
-        source_subdir=args.source_subdir
+        source_subdir=args.source_subdir,
+        delete_raw=args.delete_raw
     )
