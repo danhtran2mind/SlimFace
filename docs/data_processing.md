@@ -88,12 +88,10 @@ data/
 │       │   ├── Dwayne Johnson_46.jpg
 │       │   ...
 ├── raw/
-│   ├── Dataset.csv
 │   ├── Faces/
 │   │   ├── Jessica Alba_90.jpg
 │   │   ├── Hugh Jackman_70.jpg
 │   │   ...
-│   ├── dataset.zip
 │   ├── Original Images/
 │   │   ├── Charlize Theron/
 │   │   │   ├── Charlize Theron_60.jpg
@@ -103,6 +101,8 @@ data/
 │   │   │   ├── Dwayne Johnson_11.jpg
 │   │   │   ├── Dwayne Johnson_58.jpg
 │   │   │   ...
+│   ├── dataset.zip
+│   └── Dataset.csv
 └── .gitignore
 ```
 
