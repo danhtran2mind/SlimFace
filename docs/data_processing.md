@@ -69,15 +69,6 @@ This script organizes the dataset into the following structure under `data/`:
 ```markdown
 data/
 ├── processed_ds/
-│   ├── train_data_aligned_efficientnet_b0/
-│   │   ├── Charlize Theron/
-│   │   │   ├── Charlize Theron_70.jpg
-│   │   │   ├── Charlize Theron_46.jpg
-│   │   │   ...
-│   │   ├── Dwayne Johnson/
-│   │   │   ├── Dwayne Johnson_58.jpg
-│   │   │   ├── Dwayne Johnson_9.jpg
-│   │   │   ...
 │   ├── train_data/
 │   │   ├── Charlize Theron/
 │   │   │   ├── Charlize Theron_70.jpg
