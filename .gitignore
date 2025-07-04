@@ -200,3 +200,7 @@ data
 
 # lightning_logs
 lightning_logs
+
+# checkpoints
+ckpts
+checkpoints
