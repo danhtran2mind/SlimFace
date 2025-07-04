@@ -193,14 +193,5 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-# Data
-dataset
-datasets
-data
-
 # lightning_logs
 lightning_logs
-
-# checkpoints
-ckpts
-checkpoints

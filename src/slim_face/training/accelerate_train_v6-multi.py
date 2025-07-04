@@ -20,15 +20,11 @@ import yaml
 
 # Append the parent directory's 'models/edgeface' folder to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models')))
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models', 'edgeface')))
-# try:
-#     from face_alignment import align
-# except ImportError:
-#     print("Warning: face_alignment package not found. Ensure it is installed for preprocessing.")
-#     align = None
 
 from classification_models.alls import FaceClassifier
 from detection_models import align
+
+# os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
 # # Function to resolve string paths to Python objects
 def resolve_path(path):

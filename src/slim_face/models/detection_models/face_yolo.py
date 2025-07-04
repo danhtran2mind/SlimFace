@@ -83,7 +83,9 @@ def process_individual(model, image_paths, all_bounding_boxes, all_cropped_faces
             all_bounding_boxes.append(bboxes)
             all_cropped_faces.append(faces[0] if faces else [])
 
-def face_yolo_detection(image_paths, yolo_model_path="./checkpoints/yolo11_face_detection/model.pt", use_batch=True, device='cuda'):
+def face_yolo_detection(image_paths,
+                        yolo_model_path="./ckpts/yolo_face_detection/model.pt",
+                        use_batch=True, device='cuda'):
     """Perform face detection using YOLOv11 with batch or individual processing on specified device."""
     model = initialize_yolo_model(yolo_model_path)
     all_bounding_boxes, all_cropped_faces = [], []

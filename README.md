@@ -27,9 +27,6 @@ git clone https://github.com/danhtran2mind/slim-face
 
 # Navigate into the newly created 'slim-face' directory.
 cd slim-face
-
-# Clone the edgeface model repository
-git clone https://github.com/danhtran2mind/edgeface src/slim_face/models/edgeface
 ```
 ### Install Dependencies
 **If cv2 does not work, run below CLI**
@@ -46,11 +43,11 @@ pip install -r requirements.txt
 ## Data Preparation
 
 ## Pre-trained Model preparation
+For detailed instructions on how to process and manage your data effectively, refer to the [Full guide for data processing](./docs/data_processing.md).
+
+This is fast usage for dataset preparation
 ```bash
-python scripts/copy_ckpts.py
-```
-```bash
-python scripts/process_kaggle_face_recognition_dataset.py
+python scripts/process_dataset.py
 ```
 ## Training
 <!-- ```bash
@@ -68,6 +65,8 @@ accelerate config default
 ```bash
 accelerate launch src/slim_face/training/accelerate_train.py
 ```
+
+
 
 ## Project Description
 
