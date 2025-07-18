@@ -42,7 +42,7 @@ slim-face-recognition/
 ├── notebooks/               # Jupyter notebooks for exploration and analysis
 │   ├── ztest.ipynb          # Existing notebook for testing/exploration
 │   └── ...                  # Other exploratory notebooks
-├── checkpoints/             # Model checkpoints and weights
+├── ckpts/             # Model checkpoints and weights
 │   ├── edgeface_xs_gamma_06.pt  # Pretrained model weights
 │   ├── edgeface_s_gamma_05.pt   # Pretrained model weights
 │   └── ...                  # Other checkpoints
