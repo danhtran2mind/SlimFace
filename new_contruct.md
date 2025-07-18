@@ -1,3 +1,4 @@
+```markdown
 slim-face-recognition/
 ├── src/                     # Source code for the project
 │   ├── slim_face/           # Main package for your project
@@ -59,3 +60,4 @@ slim-face-recognition/
 ├── .python-version         # Python version specification (e.g., for pyenv)
 ├── setup.py                # Setup script for packaging the project
 └── pyproject.toml          # Modern Python project configuration (optional)
+```
