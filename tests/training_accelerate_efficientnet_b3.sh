@@ -70,7 +70,7 @@ main() {
     }
 
     check_directory "$DATASET_DIR"
-    
+
     # Configure accelerate
     log_message "Configuring accelerate..."
     accelerate config default || {
@@ -80,7 +80,7 @@ main() {
 
     # Launch training
     log_message "Starting model training..."
-    accelerate launch "${SRC_DIR}/accelerate_train.py.py" \
+    accelerate launch "${SRC_DIR}/accelerate_train.py" \
         --batch_size 32 \
         --algorithm yolo \
         --learning_rate 1e-4 \
