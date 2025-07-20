@@ -340,7 +340,7 @@ def main(args):
     
     # Save the idx_to_class mapping
     idx_to_class = {v: k for k, v in train_dataset.class_to_idx.items()}
-    idx_to_class_path = os.path.join('./ckpts', f'slim_face_{args.classification_model_name}_idx_to_class.json')
+    idx_to_class_path = os.path.join('./ckpts', 'index_to_class_mapping.json')
     os.makedirs(os.path.dirname(idx_to_class_path), exist_ok=True)
     with open(idx_to_class_path, 'w') as f:
         json.dump(idx_to_class, f, indent=4)
