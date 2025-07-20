@@ -1,47 +1,15 @@
 import os
-import sys
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 import argparse
 import warnings
-import yaml
-from torch import nn
-
-# Append the parent directory's 'models/edgeface' folder to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models')))
-
-from classification_models.alls import FaceClassifier
+import json
 from detection_models import align
 
-def resolve_path(path):
-    """Convert a string like 'module.submodule.function' to a Python callable object."""
-    try:
-        module_name, obj_name = path.rsplit('.', 1)
-        module = __import__("torchvision." + module_name, fromlist=[obj_name])
-        return getattr(module, obj_name)
-    except Exception as e:
-        raise ValueError(f"Failed to resolve path {path}: {e}")
-
-def load_model_configs(yaml_path):
-    """Load model configurations from YAML file."""
-    try:
-        with open(yaml_path, 'r') as file:
-            config = yaml.safe_load(file)
-        if 'models' in config:
-            config = config['models']
-        model_configs = {}
-        for model_name, params in config.items():
-            model_configs[model_name] = {
-                'resolution': params['resolution'],
-                'model_fn': resolve_path(params['model_fn']),
-                'weights': params['weights'].split(".")[-1]
-            }
-        return model_configs
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Configuration file {yaml_path} not found.")
-    except Exception as e:
-        raise ValueError(f"Error loading YAML configuration: {e}")
+# Append the parent directory's 'models/edgeface' folder to the system path
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models')))
 
 def preprocess_image(image_path, algorithm='yolo', resolution=224):
     """Preprocess a single image using face alignment and specified resolution."""
@@ -68,61 +36,34 @@ def preprocess_image(image_path, algorithm='yolo', resolution=224):
     image_tensor = transform(aligned_image).unsqueeze(0)  # Add batch dimension
     return image_tensor
 
-def load_model(model_path, classifier_head_path, model_name, num_classes, model_configs):
-    """Load the trained model and classifier head."""
-    model_fn = model_configs[model_name]['model_fn']
-    weights = model_configs[model_name]['weights']
-    base_model = model_fn(weights=weights)
-    
-    # Freeze base model parameters
-    for param in base_model.parameters():
-        param.requires_grad = False
-    if hasattr(base_model, 'classifier'):
-        base_model.classifier = nn.Identity()
-    elif hasattr(base_model, 'fc'):
-        base_model.fc = nn.Identity()
-    elif hasattr(base_model, 'head'):
-        base_model.head = nn.Identity()
-    base_model.eval()
-    
-    model = FaceClassifier(base_model=base_model, num_classes=num_classes, model_name=model_name, model_configs=model_configs)
-    
-    # Load state dictionaries
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-    model.eval()
-    return model
+def load_model(model_path):
+    """Load the trained model in TorchScript format."""
+    try:
+        model = torch.jit.load(model_path, map_location=torch.device('cpu'))
+        model.eval()
+        return model
+    except Exception as e:
+        raise RuntimeError(f"Failed to load TorchScript model from {model_path}: {e}")
 
-def load_class_mapping(dataset_dir):
-    """Load class-to-index mapping from the dataset directory."""
-    class_to_idx = {}
-    for idx, person in enumerate(sorted(os.listdir(dataset_dir))):
-        person_path = os.path.join(dataset_dir, person)
-        if os.path.isdir(person_path):
-            class_to_idx[person] = idx
-    idx_to_class = {v: k for k, v in class_to_idx.items()}
-    return idx_to_class
+def load_class_mapping(idx_to_class_path):
+    """Load class-to-index mapping from the JSON file."""
+    try:
+        with open(idx_to_class_path, 'r') as f:
+            idx_to_class = json.load(f)
+        # Convert string keys (from JSON) to integers
+        idx_to_class = {int(k): v for k, v in idx_to_class.items()}
+        return idx_to_class
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Index to class mapping file {idx_to_class_path} not found.")
+    except Exception as e:
+        raise ValueError(f"Error loading index to class mapping: {e}")
 
 def main(args):
-    # Load model configurations
-    MODEL_CONFIGS = load_model_configs(args.image_classification_models_config_path)
-    if args.classification_model_name not in MODEL_CONFIGS:
-        raise ValueError(f"Model {args.classification_model_name} not supported. Choose from {list(MODEL_CONFIGS.keys())}")
-    
-    resolution = MODEL_CONFIGS[args.classification_model_name]['resolution']
-    
-    # Load class mapping
-    train_cache_dir = os.path.join(args.dataset_dir, f"train_data_aligned_{args.classification_model_name}")
-    idx_to_class = load_class_mapping(train_cache_dir)
-    num_classes = len(idx_to_class)
+    # Load class mapping from JSON file
+    idx_to_class = load_class_mapping(args.idx_to_class_path)
     
     # Load model
-    model = load_model(
-        model_path=args.model_path,
-        classifier_head_path=args.classifier_head_path,
-        model_name=args.classification_model_name,
-        num_classes=num_classes,
-        model_configs=MODEL_CONFIGS
-    )
+    model = load_model(args.model_path)
     
     # Process input images
     device = torch.device('cuda' if torch.cuda.is_available() and args.accelerator == 'gpu' else 'cpu')
@@ -143,12 +84,12 @@ def main(args):
     results = []
     with torch.no_grad():
         for image_path in image_paths:
-            image_tensor = preprocess_image(image_path, algorithm=args.algorithm, resolution=resolution)
+            image_tensor = preprocess_image(image_path, algorithm=args.algorithm, resolution=args.resolution)
             image_tensor = image_tensor.to(device)
             output = model(image_tensor)
             probabilities = torch.softmax(output, dim=1)
             confidence, predicted = torch.max(probabilities, 1)
-            predicted_class = idx_to_class[predicted.item()]
+            predicted_class = idx_to_class.get(predicted.item(), "Unknown")
             results.append({
                 'image_path': image_path,
                 'predicted_class': predicted_class,
@@ -166,23 +107,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perform inference with a trained face classification model.')
     parser.add_argument('--input_path', type=str, required=True,
                         help='Path to an image or directory of images for inference.')
-    parser.add_argument('--dataset_dir', type=str, default='./data/processed_ds',
-                        help='Path to the dataset directory to load class mappings.')
-    parser.add_argument('--image_classification_models_config_path', type=str, 
-                        default='./configs/image_classification_models_config.yaml',
-                        help='Path to the YAML configuration file for model configurations.')
+    parser.add_argument('--idx_to_class_path', type=str, required=True,
+                        help='Path to the JSON file containing index to class mapping.')
     parser.add_argument('--model_path', type=str, required=True,
-                        help='Path to the trained full model (.pth file).')
-    parser.add_argument('--classifier_head_path', type=str,
-                        help='Path to the trained classifier head (.pth file), if separate.')
-    parser.add_argument('--classification_model_name', type=str, default='efficientnet_b0',
-                        help='Model used for training.')
+                        help='Path to the trained full model in TorchScript format (.pth file).')
     parser.add_argument('--algorithm', type=str, default='yolo',
                         choices=['mtcnn', 'yolo'],
                         help='Face detection algorithm to use (mtcnn or yolo).')
     parser.add_argument('--accelerator', type=str, default='auto',
                         choices=['cpu', 'gpu', 'auto'],
                         help='Accelerator type for inference.')
+    parser.add_argument('--resolution', type=int, default=224,
+                        help='Resolution for input images (default: 224).')
     
     args = parser.parse_args()
     main(args)

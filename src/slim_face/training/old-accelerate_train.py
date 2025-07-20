@@ -7,7 +7,6 @@ import torch.multiprocessing as mp
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
-import json
 import argparse
 import warnings
 import pytorch_lightning as pl
@@ -130,6 +129,72 @@ class FaceDataset(Dataset):
             image = self.transform(image)
         return image, label
 
+# class FaceClassifier(nn.Module):
+#     """Face classification model with a convolutional head."""
+#     def __init__(self, base_model, num_classes, model_name):
+#         super(FaceClassifier, self).__init__()
+#         self.base_model = base_model
+#         self.model_name = model_name
+        
+#         # Determine the feature extraction method based on model type
+#         if 'efficientnet' in model_name:
+#             with torch.no_grad():
+#                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
+#                 features = base_model.features(dummy_input)
+#                 in_channels = features.shape[1]
+#             self.feature_dim = in_channels
+#         elif 'regnet' in model_name:
+#             with torch.no_grad():
+#                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
+#                 features = base_model.features(dummy_input) if hasattr(base_model, 'features') else base_model(dummy_input)
+#                 in_channels = features.shape[1]
+#             self.feature_dim = in_channels
+#         elif 'vit' in model_name:
+#             with torch.no_grad():
+#                 dummy_input = torch.zeros(1, 3, MODEL_CONFIGS[model_name]['resolution'], MODEL_CONFIGS[model_name]['resolution'])
+#                 features = base_model(dummy_input)
+#                 in_channels = features.shape[-1]
+#             self.feature_dim = in_channels
+#         else:
+#             raise ValueError(f"Unsupported model type: {model_name}")
+
+#         # Define the classifier head
+#         if 'vit' in model_name:
+#             self.conv_head = nn.Sequential(
+#                 nn.Linear(self.feature_dim, 512),
+#                 nn.BatchNorm1d(512),
+#                 nn.ReLU(),
+#                 nn.Dropout(0.5),
+#                 nn.Linear(512, 256),
+#                 nn.BatchNorm1d(256),
+#                 nn.ReLU(),
+#                 nn.Linear(256, num_classes)
+#             )
+#         else:
+#             self.conv_head = nn.Sequential(
+#                 nn.Conv2d(self.feature_dim, 512, kernel_size=3, padding=1),
+#                 nn.BatchNorm2d(512),
+#                 nn.ReLU(),
+#                 nn.Dropout2d(0.5),
+#                 nn.Conv2d(512, 256, kernel_size=3, padding=1),
+#                 nn.BatchNorm2d(256),
+#                 nn.ReLU(),
+#                 nn.AdaptiveAvgPool2d(1),
+#                 nn.Flatten(),
+#                 nn.Linear(256, num_classes)
+#             )
+
+#     def forward(self, x):
+#         if 'vit' in self.model_name:
+#             features = self.base_model(x)
+#             output = self.conv_head(features)
+#         else:
+#             features = self.base_model.features(x) if hasattr(self.base_model, 'features') else self.base_model(x)
+#             output = self.conv_head(features)
+#         return output
+
+
+
 class FaceClassifierLightning(pl.LightningModule):
     """PyTorch Lightning module for face classification."""
     def __init__(self, base_model, num_classes, learning_rate,
@@ -201,11 +266,10 @@ class FaceClassifierLightning(pl.LightningModule):
         }
 
     def save_full_model(self, save_path):
-        """Save the full model (base_model + conv_head) in TorchScript format."""
+        """Save the full model (base_model + conv_head)."""
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        scripted_model = torch.jit.script(self.model)
-        torch.jit.save(scripted_model, save_path)
-        print(f"Full model saved in TorchScript format to {save_path}")
+        torch.save(self.model.state_dict(), save_path)
+        print(f"Full model saved to {save_path}")
 
     def save_classifier_head(self, save_path):
         """Save only the classifier head (conv_head)."""
@@ -338,14 +402,6 @@ def main(args):
     )
     trainer.fit(model, train_loader, val_loader)
     
-    # Save the idx_to_class mapping
-    idx_to_class = {v: k for k, v in train_dataset.class_to_idx.items()}
-    idx_to_class_path = os.path.join('./ckpts', f'slim_face_{args.classification_model_name}_idx_to_class.json')
-    os.makedirs(os.path.dirname(idx_to_class_path), exist_ok=True)
-    with open(idx_to_class_path, 'w') as f:
-        json.dump(idx_to_class, f, indent=4)
-    print(f"Index to class mapping saved to {idx_to_class_path}")
-
     # Save the full model and classifier head after training
     full_model_save_path = os.path.join('./ckpts', f'slim_face_{args.classification_model_name}_full_model.pth')
     classifier_head_save_path = os.path.join('./ckpts', f'slim_face_{args.classification_model_name}_conv_head.pth')
