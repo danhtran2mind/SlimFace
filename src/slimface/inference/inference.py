@@ -9,9 +9,9 @@ import json
 
 
 # Append the parent directory's 'models/edgeface' folder to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from detection_models import align
+from models.detection_models import align
 
 def preprocess_image(image_path, algorithm='yolo', resolution=224):
     """Preprocess a single image using face alignment and specified resolution."""
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perform inference with a trained face classification model.')
     parser.add_argument('--input_path', type=str, required=True,
                         help='Path to an image or directory of images for inference.')
-    parser.add_argument('--idx_to_class_path', type=str, required=True,
+    parser.add_argument('--index_to_class_mapping_path', type=str, required=True,
                         help='Path to the JSON file containing index to class mapping.')
     parser.add_argument('--model_path', type=str, required=True,
                         help='Path to the trained full model in TorchScript format (.pth file).')

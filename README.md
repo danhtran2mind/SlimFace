@@ -1,4 +1,4 @@
-# Slim Face Recognition
+# SlimFace: Slim Face Recognition
 
 > ## Credits and Citation
 >
@@ -19,14 +19,16 @@
 >   year={2024}
 > }
 > ```
+
+
 ## Usage
 ### Clone Repositories
 ```bash
 # Clone the repository
-git clone https://github.com/danhtran2mind/slim-face
+git clone https://github.com/danhtran2mind/slimface
 
-# Navigate into the newly created 'slim-face' directory.
-cd slim-face
+# Navigate into the newly created 'slimface' directory.
+cd slimface
 ```
 ### Install Dependencies
 **If Open-CV (CV2) does not work, run below CLI**
@@ -58,10 +60,14 @@ accelerate config default
 
 2. Launch the training script using Accelerate:
 ```bash
-accelerate launch src/slim_face/training/accelerate_train.py
+accelerate launch src/slimface/training/accelerate_train.py
 ```
 
 For additional help, you can refer to the [Training Documentation](./docs/training/training_docs.md) for more details.
+
+## Demostration
+
+https://huggingface.co/spaces/danhtran2mind/slimface
 
 ## Project Description
 
