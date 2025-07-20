@@ -1,15 +1,17 @@
 import os
+import sys
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 import argparse
 import warnings
 import json
-from detection_models import align
+
 
 # Append the parent directory's 'models/edgeface' folder to the system path
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models')))
+
+from detection_models import align
 
 def preprocess_image(image_path, algorithm='yolo', resolution=224):
     """Preprocess a single image using face alignment and specified resolution."""
