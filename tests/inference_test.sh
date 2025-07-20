@@ -46,10 +46,13 @@ main() {
     log_message "Starting inference pipeline..."
 
     # Set variables
-    INPUT_PATH="assets/test_images/Elon_Musk.jpg"
-    MODEL_PATH="ckpts/slim_face_efficientnet_v2_s_full_model.pth"
-    CONFIG_PATH="configs/image_classification_models_config.yaml"
-    SRC_DIR="src/slim_face/inference"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"  # Assumes tests/ is directly under project_root/
+
+    INPUT_PATH="$PROJECT_ROOT/assets/test_images/Elon_Musk.jpg"
+    MODEL_PATH="$PROJECT_ROOT/ckpts/slim_face_efficientnet_v2_s_full_model.pth"
+    CONFIG_PATH="$PROJECT_ROOT/configs/image_classification_models_config.yaml"
+    SRC_DIR="$PROJECT_ROOT/src/slim_face/inference"
 
     # Check if required files exist
     check_file "$INPUT_PATH"

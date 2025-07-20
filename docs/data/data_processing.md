@@ -1,8 +1,8 @@
-# Data Processing for Slim-Face Training 🖼️
+# Data Processing for slimface Training 🖼️
 
 ## Table of Contents
 
-- [Data Processing for Slim-Face Training 🖼️](#data-processing-for-slim-face-training-)
+- [Data Processing for slimface Training 🖼️](#data-processing-for-slimface-training-)
   - [Command-Line Arguments](#command-line-arguments)
     - [Command-Line Arguments for `process_dataset.py`](#command-line-arguments-for-process_datasetpy)
     - [Example Usage](#example-usage)
@@ -48,11 +48,11 @@ python scripts/process_dataset.py \
 These options allow flexible dataset processing tailored to your needs. 🚀
 
 ### Step 1: Clone the Repository
-Ensure the `slim-face` project is set up by cloning the repository and navigating to the project directory:
+Ensure the `slimface` project is set up by cloning the repository and navigating to the project directory:
 
 ```bash
-git clone https://github.com/danhtran2mind/slim-face/
-cd slim-face
+git clone https://github.com/danhtran2mind/slimface/
+cd slimface
 ```
 
 ### Step 2: Process the Dataset

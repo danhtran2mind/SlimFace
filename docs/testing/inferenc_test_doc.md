@@ -1,15 +1,12 @@
-# Running Training Scripts
+```markdown
+# Running Inference Test Script
 
-Instructions to run these scripts in the `tests` folder on Linux, Windows, and macOS:
-- `tests/training_accelerate_efficientnet_b3.sh`
-- `tests/training_accelerate_efficientnet_v2_s.sh`
-- `tests/training_accelerate_regnet_y_800mf.sh`
-- `tests/training_accelerate_vit_b_16_test.sh`
+Instructions to run the `tests/inference_test.sh` script in the `tests` folder on Linux, Windows, and macOS.
 
 ## Prerequisites
 1. Install Python, PyTorch, Accelerate:
    ```bash
-   pip install requirements/requirements.txt
+   pip install -r requirements/requirements.txt
    ```
 2. Create virtual environment:
    ```bash
@@ -17,9 +14,9 @@ Instructions to run these scripts in the `tests` folder on Linux, Windows, and m
    source venv/bin/activate  # Linux/macOS
    .\venv\Scripts\activate   # Windows
    ```
-3. Make scripts executable (Linux/macOS):
+3. Make script executable (Linux/macOS):
    ```bash
-   chmod +x tests/*.sh
+   chmod +x tests/inference_test.sh
    ```
 
 ## Linux
@@ -27,19 +24,16 @@ Instructions to run these scripts in the `tests` folder on Linux, Windows, and m
    ```bash
    cd tests
    ```
-2. Run scripts:
+2. Run script:
    ```bash
-   ./training_accelerate_efficientnet_b3.sh
-   ./training_accelerate_efficientnet_v2_s.sh
-   ./training_accelerate_regnet_y_800mf.sh
-   ./training_accelerate_vit_b_16_test.sh
+   ./inference_test.sh
    ```
 3. **Fix issues**:
-   - Use `bash training_accelerate_efficientnet_b3.sh` if `./` fails.
+   - Use `bash inference_test.sh` if `./` fails.
    - Fix line endings:
      ```bash
      sudo apt install dos2unix
-     dos2unix training_accelerate_*.sh
+     dos2unix inference_test.sh
      ```
 
 ## Windows (using WSL)
@@ -56,17 +50,17 @@ Instructions to run these scripts in the `tests` folder on Linux, Windows, and m
    ```
 4. Make executable:
    ```bash
-   chmod +x training_accelerate_*.sh
+   chmod +x inference_test.sh
    ```
-5. Run scripts:
+5. Run script:
    ```bash
-   ./training_accelerate_efficientnet_b3.sh
+   ./inference_test.sh
    ```
 6. **Fix issues**:
    - Fix line endings:
      ```bash
      sudo apt install dos2unix
-     dos2unix training_accelerate_*.sh
+     dos2unix inference_test.sh
      ```
 
 ## macOS
@@ -81,23 +75,24 @@ Instructions to run these scripts in the `tests` folder on Linux, Windows, and m
    ```
 3. Make executable:
    ```bash
-   chmod +x training_accelerate_*.sh
+   chmod +x inference_test.sh
    ```
-4. Run scripts:
+4. Run script:
    ```bash
-   ./training_accelerate_efficientnet_b3.sh
+   ./inference_test.sh
    ```
 5. **Fix issues**:
    - Fix line endings:
      ```bash
      brew install dos2unix
-     dos2unix training_accelerate_*.sh
+     dos2unix inference_test.sh
      ```
 
 ## Notes
 - Ensure GPU support (CUDA for Linux/Windows, MPS for macOS) if needed.
-- Check scripts for extra settings (e.g., `export CUDA_VISIBLE_DEVICES=0`).
+- Check script for extra settings (e.g., `export CUDA_VISIBLE_DEVICES=0`).
 - Save output:
   ```bash
-  ./training_accelerate_efficientnet_b3.sh > output.log 2>&1
+  ./inference_test.sh > output.log 2>&1
   ```
+```
