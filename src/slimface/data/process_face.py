@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models.detection_models import align  # Assuming this is available in your project
 
-def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo', resolution=224):
+def extract_and_save_faces(input_dir, output_dir, algorithm='yolo', resolution=224):
     """Preprocess images using face alignment and cache them with specified resolution."""
     if align is None:
         raise ImportError("face_alignment package is required for preprocessing.")

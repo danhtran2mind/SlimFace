@@ -7,7 +7,6 @@ import argparse
 import warnings
 import json
 
-
 # Append the parent directory's 'models/edgeface' folder to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -103,7 +102,7 @@ def main(args):
         print(f"Image: {result['image_path']}")
         print(f"Predicted Class: {result['predicted_class']}")
         print(f"Confidence: {result['confidence']:.4f}")
-        print("-" * 50)
+        
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perform inference with a trained face classification model.')

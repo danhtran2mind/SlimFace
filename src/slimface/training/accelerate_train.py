@@ -22,7 +22,7 @@ import yaml
 # Append the parent directory's 'models/edgeface' folder to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from data.preprocess import preprocess_and_cache_images
+from slimface.data.process_face import extract_and_save_faces
 from models.classification_models.alls import FaceClassifier
 from models.detection_models import align
 
@@ -59,7 +59,7 @@ def load_model_configs(yaml_path):
     except Exception as e:
         raise ValueError(f"Error loading YAML configuration: {e}")
 
-# def preprocess_and_cache_images(input_dir, output_dir, algorithm='yolo', resolution=224):
+# def extract_and_save_faces(input_dir, output_dir, algorithm='yolo', resolution=224):
 #     """Preprocess images using face alignment and cache them with specified resolution."""
 #     if align is None:
 #         raise ImportError("face_alignment package is required for preprocessing.")
@@ -248,14 +248,14 @@ def main(args):
     train_cache_dir = os.path.join(args.dataset_dir, f"train_data_aligned_{args.classification_model_name}")
     val_cache_dir = os.path.join(args.dataset_dir, f"val_data_aligned_{args.classification_model_name}")
     print(f"Preprocessing training dataset with resolution {resolution}...")
-    preprocess_and_cache_images(
+    extract_and_save_faces(
         input_dir=os.path.join(args.dataset_dir, "train_data"),
         output_dir=train_cache_dir,
         algorithm=args.algorithm,
         resolution=resolution
     )
     print(f"Preprocessing validation dataset with resolution {resolution}...")
-    preprocess_and_cache_images(
+    extract_and_save_faces(
         input_dir=os.path.join(args.dataset_dir, "val_data"),
         output_dir=val_cache_dir,
         algorithm=args.algorithm,
