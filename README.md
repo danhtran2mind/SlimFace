@@ -29,7 +29,7 @@ git clone https://github.com/danhtran2mind/slim-face
 cd slim-face
 ```
 ### Install Dependencies
-**If cv2 does not work, run below CLI**
+**If Open-CV (CV2) does not work, run below CLI**
 ```bash
 sudo apt update
 sudo apt install -y libglib2.0-0
@@ -50,23 +50,18 @@ This is fast usage for dataset preparation
 python scripts/process_dataset.py
 ```
 ## Training
-<!-- ```bash
-cd src/slim_face
-``` -->
-### Normal Training
-```bash
-python src/slim_face/training/train.py
-```
-### Accelerate Training
+
+1. Configure the default settings for Accelerate:
 ```bash
 accelerate config default
 ```
 
+2. Launch the training script using Accelerate:
 ```bash
 accelerate launch src/slim_face/training/accelerate_train.py
 ```
 
-
+For additional help, you can refer to the [Training Documentation](./docs/training/training_docs.md) for more details.
 
 ## Project Description
 
