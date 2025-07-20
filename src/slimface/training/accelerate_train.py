@@ -22,7 +22,7 @@ import yaml
 # Append the parent directory's 'models/edgeface' folder to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from slimface.data.process_face import extract_and_save_faces
+from data.process_face import extract_and_save_faces
 from models.classification_models.alls import FaceClassifier
 from models.detection_models import align
 
