@@ -33,8 +33,6 @@ check_directory() {
 # Function to check Python and required tools
 check_requirements() {
     log_message "Checking requirements..."
-
-    # Check for Python
     if ! command_exists python3; then
         log_message "ERROR: Python3 is not installed"
         exit 1
@@ -45,10 +43,9 @@ check_requirements() {
 main() {
     log_message "Starting inference pipeline..."
 
-    # Set variables
+    # Set variables with absolute paths
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"  # Assumes tests/ is directly under project_root/
-
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
     INPUT_PATH="$PROJECT_ROOT/assets/test_images/Elon_Musk.jpg"
     MODEL_PATH="$PROJECT_ROOT/ckpts/slim_face_efficientnet_v2_s_full_model.pth"
     CONFIG_PATH="$PROJECT_ROOT/configs/image_classification_models_config.yaml"
