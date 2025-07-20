@@ -11,7 +11,7 @@ import shutil
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from data_processing import process_image
+from slim_face.data.data_processing import process_image
 
 def download_and_split_kaggle_dataset(
     dataset_slug,
