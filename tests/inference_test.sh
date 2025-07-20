@@ -48,7 +48,7 @@ main() {
     PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
     INPUT_PATH="$PROJECT_ROOT/assets/test_images/Elon_Musk.jpg"
     MODEL_PATH="$PROJECT_ROOT/ckpts/slimface_efficientnet_v2_s_full_model.pth"
-    CONFIG_PATH="$PROJECT_ROOT/configs/image_classification_models_config.yaml"
+    CONFIG_PATH="$PROJECT_ROOT/ckpts/index_to_class_mapping.json"
     SRC_DIR="$PROJECT_ROOT/src/slimface/inference"
 
     # Check if required files exist
@@ -65,7 +65,7 @@ main() {
     python3 "${SRC_DIR}/inference.py" \
         --input_path "$INPUT_PATH" \
         --model_path "$MODEL_PATH" \
-        -- "$CONFIG_PATH" || {
+        --index_to_class_mapping_path "$CONFIG_PATH" || {
         log_message "ERROR: Inference failed"
         exit 1
     }

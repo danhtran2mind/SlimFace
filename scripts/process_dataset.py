@@ -9,9 +9,8 @@ import sys
 import argparse
 import shutil
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from slimface.data.data_processing import process_image
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.slimface.data.data_processing import process_image
 
 def download_and_split_kaggle_dataset(
     dataset_slug,

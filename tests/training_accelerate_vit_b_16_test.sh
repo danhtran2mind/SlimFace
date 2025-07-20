@@ -44,9 +44,12 @@ main() {
     log_message "Starting training pipeline..."
 
     # Set variables
-    DATASET_DIR="./data/processed_ds"
-    SCRIPT_DIR="scripts"
-    SRC_DIR="src/slimface/training"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+    DATASET_DIR="$PROJECT_ROOT/data/processed_ds"
+    SCRIPT_DIR="$PROJECT_ROOT/scripts"
+    SRC_DIR="$PROJECT_ROOT/src/slimface/training"
 
     # Check if required directories exist
     check_directory "$DATASET_DIR"

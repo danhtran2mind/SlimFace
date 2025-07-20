@@ -1,4 +1,3 @@
-```markdown
 # Running Inference Test Script
 
 Instructions to run the `tests/inference_test.sh` script in the `tests` folder on Linux, Windows, and macOS.
@@ -95,4 +94,3 @@ Instructions to run the `tests/inference_test.sh` script in the `tests` folder o
   ```bash
   ./inference_test.sh > output.log 2>&1
   ```
-```
