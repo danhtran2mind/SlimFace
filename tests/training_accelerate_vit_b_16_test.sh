@@ -52,7 +52,6 @@ main() {
     SRC_DIR="$PROJECT_ROOT/src/slimface/training"
 
     # Check if required directories exist
-    check_directory "$DATASET_DIR"
     check_directory "$SCRIPT_DIR"
     check_directory "$SRC_DIR"
 
@@ -68,7 +67,7 @@ main() {
         log_message "ERROR: Dataset processing failed"
         exit 1
     }
-
+    check_directory "$DATASET_DIR"
     # Configure accelerate
     log_message "Configuring accelerate..."
     accelerate config default || {
