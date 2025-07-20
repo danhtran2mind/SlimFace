@@ -46,22 +46,22 @@ def load_model(model_path):
     except Exception as e:
         raise RuntimeError(f"Failed to load TorchScript model from {model_path}: {e}")
 
-def load_class_mapping(idx_to_class_path):
+def load_class_mapping(index_to_class_mapping_path):
     """Load class-to-index mapping from the JSON file."""
     try:
-        with open(idx_to_class_path, 'r') as f:
+        with open(index_to_class_mapping_path, 'r') as f:
             idx_to_class = json.load(f)
         # Convert string keys (from JSON) to integers
         idx_to_class = {int(k): v for k, v in idx_to_class.items()}
         return idx_to_class
     except FileNotFoundError:
-        raise FileNotFoundError(f"Index to class mapping file {idx_to_class_path} not found.")
+        raise FileNotFoundError(f"Index to class mapping file {index_to_class_mapping_path} not found.")
     except Exception as e:
         raise ValueError(f"Error loading index to class mapping: {e}")
 
 def main(args):
     # Load class mapping from JSON file
-    idx_to_class = load_class_mapping(args.idx_to_class_path)
+    idx_to_class = load_class_mapping(args.index_to_class_mapping_path)
     
     # Load model
     model = load_model(args.model_path)
@@ -102,7 +102,7 @@ def main(args):
         print(f"Image: {result['image_path']}")
         print(f"Predicted Class: {result['predicted_class']}")
         print(f"Confidence: {result['confidence']:.4f}")
-        
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perform inference with a trained face classification model.')
