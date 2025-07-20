@@ -46,7 +46,7 @@ main() {
     # Set variables
     DATASET_DIR="./data/processed_ds"
     SCRIPT_DIR="scripts"
-    SRC_DIR="src/slim_face/training"
+    SRC_DIR="src/slimface/training"
 
     # Check if required directories exist
     check_directory "$DATASET_DIR"
