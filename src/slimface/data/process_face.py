@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser.add_argument('--resolution', type=int, default=224, help='Resolution for the output images.')
     
     args = parser.parse_args()
-    preprocess_and_cache_images(args.input_dir, args.output_dir, args.algorithm, args.resolution)
+    extract_and_save_faces(args.input_dir, args.output_dir, args.algorithm, args.resolution)
 
     # python src/slimface/data/preprocess.py \
     #     --input_dir "data/raw/Original Images/Original Images" \

@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from data.process_face import extract_and_save_faces
 from models.classification_models.alls import FaceClassifier
-from models.detection_models import align
+# from models.detection_models import align
 
 # os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
@@ -324,7 +324,7 @@ def main(args):
     checkpoint_callback = CustomModelCheckpoint(
         monitor='val_loss',
         dirpath=ckpts_backup_dir,
-        filename=f'slimface_{args.classification_model_name}_{{epoch:02d}}_{{val_loss:.2f}}',
+        filename=f'SlimFace_{args.classification_model_name}_{{epoch:02d}}_{{val_loss:.2f}}',
         save_top_k=1,
         mode='min'
     )
@@ -348,8 +348,8 @@ def main(args):
     print(f"Index to class mapping saved to {idx_to_class_path}")
 
     # Save the full model and classifier head after training
-    full_model_save_path = os.path.join('./ckpts', f'slimface_{args.classification_model_name}_full_model.pth')
-    classifier_head_save_path = os.path.join('./ckpts', f'slimface_{args.classification_model_name}_conv_head.pth')
+    full_model_save_path = os.path.join('./ckpts', f'SlimFace_{args.classification_model_name}_full_model.pth')
+    classifier_head_save_path = os.path.join('./ckpts', f'SlimFace_{args.classification_model_name}_conv_head.pth')
     
     model.save_full_model(full_model_save_path)
     # model.save_classifier_head(classifier_head_save_path)
