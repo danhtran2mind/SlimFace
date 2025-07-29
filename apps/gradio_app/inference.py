@@ -4,7 +4,7 @@ from PIL import Image
 
 # Append the path to the inference script's directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'slimface', 'inference')))
-from end2end_inference import cinference_and_confirm
+from end2end_inference import inference_and_confirm
 
 def run_inference(image, reference_dict_path, index_to_class_mapping_path, model_path, 
                  edgeface_model_name="edgeface_base", edgeface_model_dir="ckpts/idiap", 
@@ -35,7 +35,7 @@ def run_inference(image, reference_dict_path, index_to_class_mapping_path, model
 
     try:
         # Call the inference function from end2end_inference.py
-        results = cinference_and_confirm(args)
+        results = inference_and_confirm(args)
         
         # Format output
         output = ""
