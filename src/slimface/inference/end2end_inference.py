@@ -80,8 +80,8 @@ def main():
     # Configuration
     unknown_image_path = 'tests/test_images/dont_know.jpg'
     reference_image_path = 'tests/test_images/Robert Downey Jr.jpg'
-    model_path = 'path/to/classifier_model.pth'  # Update with actual path
-    index_to_class_mapping_path = 'path/to/index_to_class.json'  # Update with actual path
+    model_path = 'ckpts/SlimFace_efficientnet_b3_full_model.pth'  # Update with actual path
+    index_to_class_mapping_path = 'ckpts/index_to_class_mapping.json'  # Update with actual path
     edgeface_model_name = "edgeface_base"
     edgeface_model_dir = "ckpts/idiap"
     
