@@ -71,6 +71,13 @@ def main(args):
     device = torch.device('cuda' if torch.cuda.is_available() and args.accelerator == 'gpu' else 'cpu')
     classifier_model = classifier_model.to(device)
     
+    # Load reference images mapping from JSON file
+    try:
+        with open(args.reference_dict_path, 'r') as f:
+            reference_images = json.load(f)
+    except Exception as e:
+        raise ValueError(f"Error loading reference images from {args.reference_dict_path}: {e}")
+    
     # Handle single image or directory
     image_paths = [args.unknown_image_path] if args.unknown_image_path.endswith(('.jpg', '.jpeg', '.png')) else [
         os.path.join(args.unknown_image_path, img) for img in os.listdir(args.unknown_image_path) 
@@ -89,7 +96,7 @@ def main(args):
             result = {'image_path': image_path, 'predicted_class': predicted_class, 'confidence': confidence.item()}
             
             # Validate with EdgeFace embeddings if reference image exists
-            reference_image_path = args.reference_images.get(predicted_class)
+            reference_image_path = reference_images.get(predicted_class)
             if reference_image_path and os.path.exists(reference_image_path):
                 unknown_embedding = get_edgeface_embeddings(image_path, args.edgeface_model_name, args.edgeface_model_dir)
                 reference_embedding = get_edgeface_embeddings(reference_image_path, args.edgeface_model_name, args.edgeface_model_dir)
@@ -103,14 +110,15 @@ def main(args):
     for result in results:
         print(f"Image: {result['image_path']}")
         print(f"Predicted Class: {result['predicted_class']}, Confidence: {result['confidence']:.4f}")
+        print("Result: ", result)
         if 'similarity' in result:
-            print(f"Cosine similarity with {args.reference_images.get(result['predicted_class'])}: {result['similarity']:.4f}")
+            print(f"Cosine similarity with {reference_images.get(result['predicted_class'])}: {result['similarity']:.4f}")
             print(f"Identity {'confirmed' if result['confirmed'] else 'not confirmed'} (threshold: {args.similarity_threshold})")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Face classification with EdgeFace embedding validation.')
     parser.add_argument('--unknown_image_path', type=str, required=True, help='Path to image or directory.')
-    parser.add_argument('--reference_images', type=str, required=True, help='JSON string of class-to-reference image paths.')
+    parser.add_argument('--reference_dict_path', type=str, required=True, help='Path to JSON file mapping classes to reference image paths.')
     parser.add_argument('--index_to_class_mapping_path', type=str, required=True, help='Path to index-to-class JSON.')
     parser.add_argument('--model_path', type=str, required=True, help='Path to classifier model (.pth).')
     parser.add_argument('--edgeface_model_name', type=str, default='edgeface_base', help='EdgeFace model name.')
@@ -121,5 +129,4 @@ if __name__ == "__main__":
     parser.add_argument('--similarity_threshold', type=float, default=0.6, help='Cosine similarity threshold.')
     
     args = parser.parse_args()
-    args.reference_images = json.loads(args.reference_images)
     main(args)
