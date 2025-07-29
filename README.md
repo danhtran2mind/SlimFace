@@ -86,7 +86,7 @@ For additional help, you can refer to the [Training Documentation](./docs/traini
 python apps/gradio_app.py
 ```
 
-https://huggingface.co/spaces/danhtran2mind/slimface
+https://huggingface.co/spaces/danhtran2mind/SlimFace-demo
 
 ## Project Description
 
