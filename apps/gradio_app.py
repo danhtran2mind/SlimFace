@@ -6,9 +6,9 @@ def create_gradio_interface():
         fn=run_inference,
         inputs=[
             gr.Image(type="pil", label="Upload Image"),
-            gr.File(label="Reference Dict JSON File"),
-            gr.File(label="Index to Class Mapping JSON File"),
-            gr.File(label="Classifier Model (.pth) File"),
+            gr.File(label="Reference Dict JSON File", value="reference_image_data.json"),
+            gr.File(label="Index to Class Mapping JSON File", value="ckpts/index_to_class_mapping.json"),
+            gr.File(label="Classifier Model (.pth) File", value="ckpts/SlimFace_efficientnet_b3_full_model.pth"),
             gr.Textbox(label="EdgeFace Model Name", value="edgeface_base"),
             gr.Textbox(label="EdgeFace Model Directory", value="ckpts/idiap"),
             gr.Dropdown(choices=["yolo", "mtcnn"], label="Face Detection Algorithm", value="yolo"),
