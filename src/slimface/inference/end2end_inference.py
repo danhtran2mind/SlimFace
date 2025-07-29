@@ -17,9 +17,8 @@
 #############
 import sys
 import os
-
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                              "..", "..", "third_party"))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                              "..", "..", "third_party")))
 ##########################################
 import torch
 from torchvision import transforms
