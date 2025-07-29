@@ -16,11 +16,12 @@ def run_inference(image, reference_dict_path, index_to_class_mapping_path, model
     # Create args object to mimic command-line arguments
     class Args:
         def __init__(self):
+            # Handle both string paths and file objects
             self.unknown_image_path = temp_image_path
-            self.reference_dict_path = reference_dict_path.name if reference_dict_path else None
-            self.index_to_class_mapping_path = index_to_class_mapping_path.name if index_to_class_mapping_path else None
-            self.model_path = model_path.name if model_path else None
-            self.edgeface_model_path = edgeface_model_path
+            self.reference_dict_path = reference_dict_path.name if hasattr(reference_dict_path, 'name') else reference_dict_path
+            self.index_to_class_mapping_path = index_to_class_mapping_path.name if hasattr(index_to_class_mapping_path, 'name') else index_to_class_mapping_path
+            self.model_path = model_path.name if hasattr(model_path, 'name') else model_path
+            self.edgeface_model_path = edgeface_model_path.name if hasattr(edgeface_model_path, 'name') else edgeface_model_path
             self.algorithm = algorithm
             self.accelerator = accelerator
             self.resolution = resolution
