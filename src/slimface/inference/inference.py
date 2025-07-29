@@ -59,7 +59,7 @@ def load_class_mapping(index_to_class_mapping_path):
     except Exception as e:
         raise ValueError(f"Error loading index to class mapping: {e}")
 
-def main(args):
+def inference(args):
     # Load class mapping from JSON file
     idx_to_class = load_class_mapping(args.index_to_class_mapping_path)
     
@@ -96,7 +96,8 @@ def main(args):
                 'predicted_class': predicted_class,
                 'confidence': confidence.item()
             })
-    
+def main(args):
+    results = inference(args)
     # Output results
     for result in results:
         print(f"Image: {result['image_path']}")

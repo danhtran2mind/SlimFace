@@ -82,6 +82,9 @@ accelerate launch src/slimface/training/accelerate_train.py
 For additional help, you can refer to the [Training Documentation](./docs/training/training_docs.md) for more details.
 
 ## Demostration
+```bash
+python apps/gradio_app.py
+```
 
 https://huggingface.co/spaces/danhtran2mind/slimface
 

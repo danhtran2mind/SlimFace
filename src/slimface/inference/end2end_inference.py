@@ -65,7 +65,7 @@ def get_edgeface_embeddings(image_path, model_name="edgeface_base", model_dir="c
     with torch.no_grad():
         return model(transform(aligned_result[0][1]).unsqueeze(0))
 
-def main(args):
+def inference_and_confirm(args):
     idx_to_class = load_class_mapping(args.index_to_class_mapping_path)
     classifier_model = load_model(args.model_path)
     device = torch.device('cuda' if torch.cuda.is_available() and args.accelerator == 'gpu' else 'cpu')
@@ -105,16 +105,19 @@ def main(args):
                 result['confirmed'] = similarity >= args.similarity_threshold
             
             results.append(result)
-    
-    # Output results
-    for result in results:
-        print(f"Image: {result['image_path']}")
-        print(f"Predicted Class: {result['predicted_class']}, Confidence: {result['confidence']:.4f}")
-        print("Result: ", result)
-        if 'similarity' in result:
-            print(f"Cosine similarity with {reference_images.get(result['predicted_class'])}: {result['similarity']:.4f}")
-            print(f"Identity {'confirmed' if result['confirmed'] else 'not confirmed'} (threshold: {args.similarity_threshold})")
 
+    #  {'image_path': 'tests/test_images/dont_know.jpg', 'predicted_class': 'Robert Downey Jr',
+    #  'confidence': 0.9292604923248291, 'similarity': 0.603316068649292, 'confirmed': True}
+
+    return results
+
+def main(args):
+    results = inference_and_confirm(args)
+    for result in results:
+        print(f"Image: {result['image_path']}, Predicted Class: {result['predicted_class']}, "
+              f"Confidence: {result['confidence']:.4f}, Similarity: {result.get('similarity', 'N/A'):.4f}, "
+              f"Confirmed: {result.get('confirmed', 'N/A')}")
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Face classification with EdgeFace embedding validation.')
     parser.add_argument('--unknown_image_path', type=str, required=True, help='Path to image or directory.')
