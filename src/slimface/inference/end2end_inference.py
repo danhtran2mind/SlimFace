@@ -130,3 +130,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     main(args)
+
+    # python src/slimface/inference/end2end_inference.py \
+    # --unknown_image_path tests/test_images/dont_know.jpg \
+    # --reference_dict_path tests/reference_image_data.json \
+    # --index_to_class_mapping_path /content/SlimFace/ckpts/index_to_class_mapping.json \
+    # --model_path /content/SlimFace/ckpts/SlimFace_efficientnet_b3_full_model.pth \
+    # --edgeface_model_name edgeface_base \
+    # --similarity_threshold 0.6
