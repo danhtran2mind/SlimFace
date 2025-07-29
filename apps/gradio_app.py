@@ -1,16 +1,19 @@
+import os
+import sys
 import gradio as gr
 from gradio_app.inference import run_inference
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 def create_gradio_interface():
     return gr.Interface(
         fn=run_inference,
         inputs=[
             gr.Image(type="pil", label="Upload Image"),
-            gr.File(label="Reference Dict JSON File", value="reference_image_data.json"),
+            gr.File(label="Reference Dict JSON File", value="tests/reference_image_data.json"),
             gr.File(label="Index to Class Mapping JSON File", value="ckpts/index_to_class_mapping.json"),
             gr.File(label="Classifier Model (.pth) File", value="ckpts/SlimFace_efficientnet_b3_full_model.pth"),
-            gr.Textbox(label="EdgeFace Model Name", value="edgeface_base"),
-            gr.Textbox(label="EdgeFace Model Directory", value="ckpts/idiap"),
+            gr.File(label="EdgeFace Model (.pt) File", value="ckpts/idiap/edgeface_base.pt"),
             gr.Dropdown(choices=["yolo", "mtcnn"], label="Face Detection Algorithm", value="yolo"),
             gr.Dropdown(choices=["auto", "cpu", "gpu"], label="Accelerator", value="auto"),
             gr.Slider(minimum=112, maximum=448, step=1, value=224, label="Resolution"),

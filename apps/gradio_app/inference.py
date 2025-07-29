@@ -6,8 +6,8 @@ from PIL import Image
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'slimface', 'inference')))
 from end2end_inference import inference_and_confirm
 
-def run_inference(image, reference_dict_path, index_to_class_mapping_path, model_path, 
-                 edgeface_model_name="edgeface_base", edgeface_model_dir="ckpts/idiap", 
+def run_inference(image, reference_dict_path, index_to_class_mapping_path, model_path,
+                 edgeface_model_path="ckpts/idiap/edgeface_base.pt", 
                  algorithm="yolo", accelerator="auto", resolution=224, similarity_threshold=0.6):
     # Save uploaded image temporarily in apps/gradio_app/
     temp_image_path = os.path.join(os.path.dirname(__file__), "temp_image.jpg")
@@ -20,8 +20,7 @@ def run_inference(image, reference_dict_path, index_to_class_mapping_path, model
             self.reference_dict_path = reference_dict_path.name if reference_dict_path else None
             self.index_to_class_mapping_path = index_to_class_mapping_path.name if index_to_class_mapping_path else None
             self.model_path = model_path.name if model_path else None
-            self.edgeface_model_name = edgeface_model_name
-            self.edgeface_model_dir = edgeface_model_dir
+            self.edgeface_model_path = edgeface_model_path
             self.algorithm = algorithm
             self.accelerator = accelerator
             self.resolution = resolution

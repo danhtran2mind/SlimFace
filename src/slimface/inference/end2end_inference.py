@@ -48,9 +48,11 @@ def load_class_mapping(index_to_class_mapping_path):
     except Exception as e:
         raise ValueError(f"Error loading class mapping: {e}")
 
-def get_edgeface_embeddings(image_path, model_name="edgeface_base", model_dir="ckpts/idiap"):
+def get_edgeface_embeddings(image_path, model_path):
+    """Get EdgeFace embeddings for a given image."""
+    model_name = os.path.basename(model_path).split('.')[0]
     model = get_model(model_name)
-    model.load_state_dict(torch.load(f'{model_dir}/{model_name}.pt', map_location='cpu'))
+    model.load_state_dict(torch.load(model_path, map_location='cpu'))
     model.eval()
     
     transform = transforms.Compose([
@@ -98,8 +100,8 @@ def inference_and_confirm(args):
             # Validate with EdgeFace embeddings if reference image exists
             reference_image_path = reference_images.get(predicted_class)
             if reference_image_path and os.path.exists(reference_image_path):
-                unknown_embedding = get_edgeface_embeddings(image_path, args.edgeface_model_name, args.edgeface_model_dir)
-                reference_embedding = get_edgeface_embeddings(reference_image_path, args.edgeface_model_name, args.edgeface_model_dir)
+                unknown_embedding = get_edgeface_embeddings(image_path, args.edgeface_model_path)
+                reference_embedding = get_edgeface_embeddings(reference_image_path, args.edgeface_model_path)
                 similarity = torch.nn.functional.cosine_similarity(unknown_embedding, reference_embedding).item()
                 result['similarity'] = similarity
                 result['confirmed'] = similarity >= args.similarity_threshold
@@ -124,8 +126,8 @@ if __name__ == "__main__":
     parser.add_argument('--reference_dict_path', type=str, required=True, help='Path to JSON file mapping classes to reference image paths.')
     parser.add_argument('--index_to_class_mapping_path', type=str, required=True, help='Path to index-to-class JSON.')
     parser.add_argument('--model_path', type=str, required=True, help='Path to classifier model (.pth).')
-    parser.add_argument('--edgeface_model_name', type=str, default='edgeface_base', help='EdgeFace model name.')
-    parser.add_argument('--edgeface_model_dir', type=str, default='ckpts/idiap', help='EdgeFace model directory.')
+    parser.add_argument('--edgeface_model_path', type=str, default='ckpts/idiap/edgeface_base.pt', help='EdgeFace model path.')
+    # parser.add_argument('--edgeface_model_dir', type=str, default='ckpts/idiap', help='EdgeFace model directory.')
     parser.add_argument('--algorithm', type=str, default='yolo', choices=['mtcnn', 'yolo'], help='Face detection algorithm.')
     parser.add_argument('--accelerator', type=str, default='auto', choices=['cpu', 'gpu', 'auto'], help='Accelerator type.')
     parser.add_argument('--resolution', type=int, default=224, help='Input image resolution.')
