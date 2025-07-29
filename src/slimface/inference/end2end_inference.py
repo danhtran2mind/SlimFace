@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 import json
 import warnings
+import argparse
 
 # Append necessary paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "third_party")))
@@ -76,43 +77,68 @@ def get_edgeface_embeddings(image_path, model_name="edgeface_base", model_dir="c
         embedding = model(transformed_input)
     return embedding
 
-def main():
-    # Configuration
-    unknown_image_path = 'tests/test_images/dont_know.jpg'
-    reference_image_path = 'tests/test_images/Robert Downey Jr.jpg'
-    model_path = 'ckpts/SlimFace_efficientnet_b3_full_model.pth'  # Update with actual path
-    index_to_class_mapping_path = 'ckpts/index_to_class_mapping.json'  # Update with actual path
-    edgeface_model_name = "edgeface_base"
-    edgeface_model_dir = "ckpts/idiap"
+def main(args):
+    # Load class mapping
+    idx_to_class = load_class_mapping(args.index_to_class_mapping_path)
     
-    # Step 1: Classify the unknown image
-    idx_to_class = load_class_mapping(index_to_class_mapping_path)
-    classifier_model = load_classifier_model(model_path)
+    # Load classifier model
+    classifier_model = load_classifier_model(args.model_path)
     
-    image_tensor = preprocess_image(unknown_image_path, algorithm='yolo', resolution=224)
+    # Process unknown image
+    image_tensor = preprocess_image(args.unknown_image_path, algorithm=args.algorithm, resolution=args.resolution)
     with torch.no_grad():
         output = classifier_model(image_tensor)
         probabilities = torch.softmax(output, dim=1)
         confidence, predicted = torch.max(probabilities, 1)
         predicted_class = idx_to_class.get(predicted.item(), "Unknown")
     
-    print(f"Predicted Class for {unknown_image_path}: {predicted_class}, Confidence: {confidence.item():.4f}")
+    print(f"Predicted Class for {args.unknown_image_path}: {predicted_class}, Confidence: {confidence.item():.4f}")
     
-    # Step 2: If predicted class is Elon Musk, validate with embeddings
-    if predicted_class == "Elon_Musk":
-        print("Validating identity using EdgeFace embeddings...")
-        unknown_embedding = get_edgeface_embeddings(unknown_image_path, edgeface_model_name, edgeface_model_dir)
-        reference_embedding = get_edgeface_embeddings(reference_image_path, edgeface_model_name, edgeface_model_dir)
+    # Validate with embeddings if a reference image is provided for the predicted class
+    reference_image_path = args.reference_images.get(predicted_class)
+    if reference_image_path and os.path.exists(reference_image_path):
+        print(f"Validating identity using EdgeFace embeddings against reference image for {predicted_class}...")
+        unknown_embedding = get_edgeface_embeddings(args.unknown_image_path, args.edgeface_model_name, args.edgeface_model_dir)
+        reference_embedding = get_edgeface_embeddings(reference_image_path, args.edgeface_model_name, args.edgeface_model_dir)
         
         similarity = torch.nn.functional.cosine_similarity(unknown_embedding, reference_embedding)
-        print(f"Cosine similarity: {similarity.item():.4f}")
+        print(f"Cosine similarity with {reference_image_path}: {similarity.item():.4f}")
         
-        if similarity.item() >= 0.6:
-            print(f"Yes, the image {unknown_image_path} is confirmed to be Elon Musk.")
+        if similarity.item() >= args.similarity_threshold:
+            print(f"Yes, the image {args.unknown_image_path} is confirmed to be {predicted_class}.")
         else:
-            print(f"No, the image {unknown_image_path} is not confirmed to be Elon Musk (similarity < 0.6).")
+            print(f"No, the image {args.unknown_image_path} is not confirmed to be {predicted_class} (similarity < {args.similarity_threshold}).")
     else:
-        print(f"The image {unknown_image_path} is not predicted to be Elon Musk.")
+        print(f"No reference image provided for {predicted_class} or reference image does not exist.")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Perform face classification and validate identity using EdgeFace embeddings.')
+    parser.add_argument('--unknown_image_path', type=str, required=True,
+                        help='Path to the unknown image for classification.')
+    parser.add_argument('--reference_images', type=str, required=True,
+                        help='JSON string mapping class names to reference image paths (e.g., {"Elon_Musk": "path/to/elon.jpg"}).')
+    parser.add_argument('--index_to_class_mapping_path', type=str, required=True,
+                        help='Path to the JSON file containing index to class mapping.')
+    parser.add_argument('--model_path', type=str, required=True,
+                        help='Path to the trained classifier model in TorchScript format (.pth file).')
+    parser.add_argument('--edgeface_model_name', type=str, default='edgeface_base',
+                        help='Name of the EdgeFace model to use.')
+    parser.add_argument('--edgeface_model_dir', type=str, default='ckpts/idiap',
+                        help='Directory where EdgeFace model checkpoints are stored.')
+    parser.add_argument('--algorithm', type=str, default='yolo',
+                        choices=['mtcnn', 'yolo'],
+                        help='Face detection algorithm to use (mtcnn or yolo).')
+    parser.add_argument('--resolution', type=int, default=224,
+                        help='Resolution for input images (default: 224).')
+    parser.add_argument('--similarity_threshold', type=float, default=0.6,
+                        help='Cosine similarity threshold for identity confirmation (default: 0.6).')
+    
+    args = parser.parse_args()
+    
+    # Parse reference_images JSON string
+    try:
+        args.reference_images = json.loads(args.reference_images)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Error parsing reference_images JSON: {e}")
+    
+    main(args)
