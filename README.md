@@ -25,10 +25,10 @@
 ### Clone Repositories
 ```bash
 # Clone the repository
-git clone https://github.com/danhtran2mind/slimface
+git clone https://github.com/danhtran2mind/SlimFace
 
 # Navigate into the newly created 'slimface' directory.
-cd slimface
+cd SlimFace
 ```
 ### Install Dependencies
 **If Open-CV (CV2) does not work, run below CLI**
@@ -40,8 +40,14 @@ sudo apt install -y libgl1-mesa-dev
 ```bash
 pip install -r requirements.txt
 ```
-
-
+### Download Model Checkpoints
+```bash
+python scripts/download_ckpts.py
+```
+### Setup Third Party
+```bash
+python scripts/setup_third_party.py
+```
 ## Data Preparation
 
 ## Pre-trained Model preparation

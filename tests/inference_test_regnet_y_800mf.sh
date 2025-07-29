@@ -46,7 +46,7 @@ main() {
     # Set variables with absolute paths
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-    INPUT_PATH="$PROJECT_ROOT/assets/test_images/Elon_Musk.jpg"
+    INPUT_PATH="$PROJECT_ROOT/tests/test_images/Elon_Musk.jpg"
     MODEL_PATH="$PROJECT_ROOT/ckpts/SlimFace_regnet_y_800mf_full_model.pth"
     CONFIG_PATH="$PROJECT_ROOT/ckpts/index_to_class_mapping.json"
     SRC_DIR="$PROJECT_ROOT/src/slimface/inference"
