@@ -37,8 +37,18 @@ sudo apt update
 sudo apt install -y libglib2.0-0
 sudo apt install -y libgl1-mesa-dev
 ```
+### Default install Dependencies
 ```bash
-pip install -r requirements.txt
+pip install -r requirements/requirements.txt
+```
+### Other install Dependencies
+- For My Compatible
+```bash
+pip install -r requirements/requirements_compatible.txt
+```
+- For `End2end Inference`
+```bash
+pip install -r requirements/requirements_inference.txt
 ```
 ### Download Model Checkpoints
 ```bash
