@@ -82,31 +82,39 @@ accelerate launch src/slimface/training/accelerate_train.py
 For additional help, you can refer to the [Training Documentation](./docs/training/training_docs.md) for more details.
 
 ### Inference
-#### Create Reference Image Data at `data/reference_data`
-For each class, you store an image in `data/reference_data` folder which are maped with `index_to_class_mapping.json`.
+#### Create Reference Images Data at `data/reference_data/images`
+For each class, you store an image in `data/reference_data/images` folder which are maped with `index_to_class_mapping.json`.
 
 The structure like:
 ```markdown
-data/reference_data/
+data/reference_data/images/
 ├── 'Robert Downey Jr.jpg'
 ├── 'Tom Cruise.jpg'
 └── ...
 ```
 
-#### Create Reference Dictionary From `index_to_class_mapping.json`
-> **Note**: You must locate `index_to_class_mapping.json` to `ckpts` folder and run code (1). Or use code (2) if you wnat to custom paths. You have to locate reference images in `data/reference_data`, if not the vale of relative class in `reference_image_data.json` will be set `""`.
-- Code (1)
-```bash
-python  scripts/reate_reference_image_path.py
-```
-- Code (2)
-```bash
-python scripts/reate_reference_image_path.py \
-    --input <your_index_to_class_mapping.json> \
-    --output <your_tests/reference_image_data.json>
-```
-The `reference_image_data.json` will locate in `tests` folder.
 
+### Create Reference Dictionary from `index_to_class_mapping.json`
+
+#### Steps
+1. Place `index_to_class_mapping.json` in the `ckpts` folder.
+2. Ensure reference images are in `data/reference_data/images`. Missing images will be set to `""` in `reference_image_data.json` (default in `data/reference_data` folder).
+3. Run one of the following commands:
+
+#### Commands
+- **Default** (Output: `data/reference_data/reference_image_data.json`):
+  ```bash
+  python scripts/create_reference_image_path.py
+  ```
+- **Custom Paths**:
+  ```bash
+  python scripts/create_reference_image_path.py \
+      --input <path_to_index_to_class_mapping.json> \
+      --output <path_to_tests/reference_image_data.json>
+  ```
+
+#### Manual Option
+Edit `reference_image_data.json` directly to add image paths as dictionary values.
 
 ## Demostration
 ```bash

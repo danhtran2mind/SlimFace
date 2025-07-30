@@ -22,9 +22,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert index_to_class JSON to name_to_image JSON with file paths')
     parser.add_argument('--input', default='./ckpts/index_to_class_mapping.json', 
                         help='Input JSON file path')
-    parser.add_argument('--output', default='./tests/reference_image_data.json', 
+    parser.add_argument('--output', default='./data/reference_image_data.json', 
                         help='Output JSON file path')
-    parser.add_argument('--reference-dir', default='data/reference_data', 
+    parser.add_argument('--reference-dir', default='data/reference_data/images', 
                         help='Directory containing reference images')
     parser.add_argument('--image-extension', default='jpg', 
                         help='Image file extension (jpg, png, etc.)')
