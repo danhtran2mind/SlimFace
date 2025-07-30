@@ -1,6 +1,0 @@
-# Ignore everything in this directory
-*
-# Except this .gitignore file
-!.gitignore
-!raw
-!reference_data
