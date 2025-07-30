@@ -67,6 +67,55 @@ def get_edgeface_embeddings(image_path, model_path):
     with torch.no_grad():
         return model(transform(aligned_result[0][1]).unsqueeze(0))
 
+# def inference_and_confirm(args):
+#     idx_to_class = load_class_mapping(args.index_to_class_mapping_path)
+#     classifier_model = load_model(args.model_path)
+#     device = torch.device('cuda' if torch.cuda.is_available() and args.accelerator == 'gpu' else 'cpu')
+#     classifier_model = classifier_model.to(device)
+    
+#     # Load reference images mapping from JSON file
+#     try:
+#         with open(args.reference_dict_path, 'r') as f:
+#             reference_images = json.load(f)
+#     except Exception as e:
+#         raise ValueError(f"Error loading reference images from {args.reference_dict_path}: {e}")
+    
+#     # Handle single image or directory
+#     image_paths = [args.unknown_image_path] if args.unknown_image_path.endswith(('.jpg', '.jpeg', '.png')) else [
+#         os.path.join(args.unknown_image_path, img) for img in os.listdir(args.unknown_image_path) 
+#         if img.endswith(('.jpg', '.jpeg', '.png'))
+#     ]
+    
+#     results = []
+#     with torch.no_grad():
+#         for image_path in image_paths:
+#             image_tensor = preprocess_image(image_path, args.algorithm, args.resolution).to(device)
+#             output = classifier_model(image_tensor)
+#             probabilities = torch.softmax(output, dim=1)
+#             confidence, predicted = torch.max(probabilities, 1)
+#             predicted_class = idx_to_class.get(predicted.item(), "Unknown")
+            
+#             result = {'image_path': image_path, 'predicted_class': predicted_class, 'confidence': confidence.item()}
+            
+#             # Validate with EdgeFace embeddings if reference image exists
+#             reference_image_path = reference_images.get(predicted_class)
+#             if reference_image_path and os.path.exists(reference_image_path):
+#                 unknown_embedding = get_edgeface_embeddings(image_path, args.edgeface_model_path)
+#                 reference_embedding = get_edgeface_embeddings(reference_image_path, args.edgeface_model_path)
+#                 similarity = torch.nn.functional.cosine_similarity(unknown_embedding, reference_embedding).item()
+#                 result['similarity'] = similarity
+#                 result['confirmed'] = similarity >= args.similarity_threshold
+#             else:
+#                 raise ValueError(f("Reference image for class '{predicted_class}' "
+#                                    "not found in {args.reference_dict_path}"))
+            
+#             results.append(result)
+
+#     #  {'image_path': 'tests/test_images/dont_know.jpg', 'predicted_class': 'Robert Downey Jr',
+#     #  'confidence': 0.9292604923248291, 'similarity': 0.603316068649292, 'confirmed': True}
+
+    return results
+
 def inference_and_confirm(args):
     idx_to_class = load_class_mapping(args.index_to_class_mapping_path)
     classifier_model = load_model(args.model_path)
@@ -105,11 +154,11 @@ def inference_and_confirm(args):
                 similarity = torch.nn.functional.cosine_similarity(unknown_embedding, reference_embedding).item()
                 result['similarity'] = similarity
                 result['confirmed'] = similarity >= args.similarity_threshold
+            else:
+                result['similarity'] = None
+                result['confirmed'] = False
             
             results.append(result)
-
-    #  {'image_path': 'tests/test_images/dont_know.jpg', 'predicted_class': 'Robert Downey Jr',
-    #  'confidence': 0.9292604923248291, 'similarity': 0.603316068649292, 'confirmed': True}
 
     return results
 

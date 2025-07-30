@@ -81,6 +81,21 @@ accelerate launch src/slimface/training/accelerate_train.py
 
 For additional help, you can refer to the [Training Documentation](./docs/training/training_docs.md) for more details.
 
+### Inference
+#### Create Reference Dictionary From `index_to_class_mapping.json`
+> **Note**: You must locate `index_to_class_mapping.json` to `ckpts` folder and run code (1). Or use code (2) if you wnat to custom paths.
+- Code (1)
+```bash
+python  scripts/reate_reference_image_path.py
+```
+- Code (2)
+```bash
+python scripts/reate_reference_image_path.py \
+    --input <your_index_to_class_mapping.json> \
+    --output <your_tests/reference_image_data.json>
+```
+The `reference_image_data.json` will locate in `tests` folder.
+
 ## Demostration
 ```bash
 python apps/gradio_app.py
