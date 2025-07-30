@@ -20,19 +20,8 @@
 - [Introduction](#introduction)
 - [Key Features](#key-features)
 - [Installation](#installation)
-  - [Step 1: Clone the Repository](#step-1-clone-the-repository)
-  - [Step 2: Install Dependencies](#step-2-install-dependencies)
-  - [Troubleshooting OpenCV](#troubleshooting-opencv)
-  - [Third-Party Dependencies](#third-party-dependencies)
 - [Usage](#usage)
-  - [Dataset Preparation](#dataset-preparation)
-  - [Reference Data Setup](#reference-data-setup)
-  - [Base Model](#base-model)
-  - [Training](#training)
-  - [Training Hyperparameters](#training-hyperparameters)
 - [Demonstration](#demonstration)
-  - [Interactive Demo](#interactive-demo)
-  - [Run Locally](#run-locally)
 - [Metrics](#metrics)
 - [Environment](#environment)
 - [Credits and Citation](#credits-and-citation)
@@ -165,11 +154,11 @@ accelerate config default
 accelerate launch src/slimface/training/accelerate_train.py
 ```
 
-For detailed instructions, refer to the [Training Documentation](./docs/training/training_docs.md).
+For detailed instructions, refer to the [Training Documentation](./docs/training/training_doc.md).
 
 ### Training Hyperparameters
 
-Default hyperparameters are optimized for performance and can be customized in `src/slimface/training/accelerate_train.py`. Refer to the [Training Documentation](./docs/training/training_docs.md) for guidance.
+Default hyperparameters are optimized for performance and can be customized in `src/slimface/training/accelerate_train.py`. Refer to the [Training Documentation](./docs/training/training_doc.md) for guidance.
 
 ## Inference
 
