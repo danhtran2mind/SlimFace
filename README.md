@@ -212,13 +212,9 @@ SlimFace requires the following environment:
 
 ## More Knowledge
 
-For additional information on models and pre-trained weights, please refer to the following resources:
+For additional information on models and pre-trained weights, please refer to the following resources: ![PyTorch Documentation](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat).
 
-The torchvision.models subpackage provides definitions for models addressing various computer vision tasks, including image classification, pixelwise semantic segmentation, object detection, instance segmentation, person keypoint detection, video classification, and optical flow. A comprehensive table of available classification weights is also provided, with accuracies reported on ImageNet-1K using single crops.
-
-For more details, please consult the following:  
-
-PyTorch Documentation: ![PyTorch Docs](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat)
+The Documentation includes the `torchvision.models` subpackage, which offers pre-trained models for various image tasks. It provides metrics like Acc@1, Acc@5, Params, and GFLOPS for model evaluation.
 
 ## Contact
 
