@@ -87,30 +87,25 @@ def create_interface():
         image_input, output = create_image_io_row()
         ref_dict, index_map, classifier_model, edgeface_model, algorithm, accelerator, resolution, similarity_threshold = create_model_settings_row()
         
-        # Add example image gallery as a table
+        # Add example image gallery as a row of columns
         with gr.Group():
             gr.Markdown("### Example Images")
             example_images = glob("apps/assets/examples/*.[jp][pn][gf]")
             if example_images:
-                # Create a list of dictionaries for the table
-                table_data = []
-                for img_path in example_images:
-                    table_data.append({
-                        "Image": img_path,  # Will be rendered as an image
-                        "Action": f"Use {os.path.basename(img_path)}"  # Button text
-                    })
-                
-                # Create a table with images and buttons
-                gr.Dataframe(
-                    value=table_data,
-                    headers=["Image", "Action"],
-                    datatype=["image", "str"],
-                    interactive=False,
-                    elem_classes=["example-table"],
-                    # Add click event for buttons
-                    row_click=lambda row: Image.open(row["Image"]),
-                    outputs=image_input
-                )
+                with gr.Row(elem_classes=["example-row"]):
+                    for img_path in example_images:
+                        with gr.Column(min_width=120):
+                            gr.Image(
+                                value=img_path,
+                                label=os.path.basename(img_path),
+                                type="filepath",
+                                height=100,
+                                elem_classes=["example-image"]
+                            )
+                            gr.Button(f"Use {os.path.basename(img_path)}").click(
+                                fn=lambda x=img_path: Image.open(x),
+                                outputs=image_input
+                            )
             else:
                 gr.Markdown("No example images found in apps/assets/examples/")
 
@@ -140,7 +135,7 @@ def create_interface():
 def main():
     """Launch the Gradio interface."""
     demo = create_interface()
-    demo.launch(share=True)
+    demo.launch()
 
 if __name__ == "__main__":
     main()
