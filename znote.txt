@@ -12,3 +12,4 @@ them script
     tao reference tu index_to_class
 
 doi trong edgeface: yolo11_face_detection -> yolo_face_detection
+hello
