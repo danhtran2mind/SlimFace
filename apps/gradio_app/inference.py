@@ -71,7 +71,7 @@ def run_inference(image, reference_dict_path, index_to_class_mapping_path, model
                 # Similarity with Reference Image
                 similarity = result.get('similarity', 'N/A')
                 similarity_str = f'{similarity:.4f}' if isinstance(similarity, (int, float)) else 'N/A'
-                output += f'<div class="result-item"><span class="label">Similarity with<br>Reference Image</span><span class="value">{similarity_str}</span></div>'
+                output += f'<div class="result-item"><span class="label">Similarity with<br> Reference Image</span><span class="value">{similarity_str}</span></div>'
                 
                 # Confirmed Person
                 confirmed = result.get('confirmed', 'N/A')
