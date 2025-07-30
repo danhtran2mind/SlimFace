@@ -210,9 +210,15 @@ SlimFace requires the following environment:
 - **Python**: 3.10 or higher
 - **Key Libraries**: Refer to [Requirements Compatible](./requirements/requirements_compatible.txt) for compatible dependencies.
 
-## Credits and Citation
+## More Knowledge
 
-SlimFace builds upon the [otroshi/edgeface](https://github.com/otroshi/edgeface) project by [Hatef Otroshi](https://github.com/otroshi), with enhancements and bug fixes available at [danhtran2mind/edgeface](https://github.com/danhtran2mind/edgeface/tree/main/face_alignment).
+For additional information on models and pre-trained weights, please refer to the following resources:
+
+The torchvision.models subpackage provides definitions for models addressing various computer vision tasks, including image classification, pixelwise semantic segmentation, object detection, instance segmentation, person keypoint detection, video classification, and optical flow. A comprehensive table of available classification weights is also provided, with accuracies reported on ImageNet-1K using single crops.
+
+For more details, please consult the following:  
+
+PyTorch Documentation: ![PyTorch Docs](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat)
 
 ## Contact
 
