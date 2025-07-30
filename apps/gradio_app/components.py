@@ -46,7 +46,7 @@ CONTENT_DESCRIPTION = """
 """
 
 CONTENT_IN_1 = """
-SlimFace empowers developers to build high-accuracy face classification models using transfer learning, leveraging TorchVision's powerful pre-trained architectures. 🌟 It provides a flexible, efficient, and scalable solution for facial recognition, delivering top-tier performance for custom applications.
+SlimFace empowers developers to build high-accuracy face classification models by leveraging TorchVision's powerful pre-trained architectures through a transfer learning approach. 🌟 It provides a flexible, efficient, and scalable solution for facial recognition, supporting training on custom datasets and inference to deliver top-tier performance for custom applications.
 """
 CONTENT_IN_2 = """
 <p class="source">

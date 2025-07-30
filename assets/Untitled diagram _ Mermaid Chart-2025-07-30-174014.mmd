@@ -1,0 +1,15 @@
+---
+config:
+  theme: neutral
+  layout: fixed
+---
+flowchart TD
+    A["Input Image"] --> B["Classification Model"]
+    B --> C["Person A"]
+    C --> D["EdgeFace Image Embedding"] & E@{ label: "Find Person A's Face Image in Database" }
+    E --> F["EdgeFace Image Embedding"]
+    D --> G["Cosine Similarity ≥ Threshold"]
+    F --> G
+    G -- True --> H["Confirmed Person is TRUE"]
+    G -- False --> I["Confirmed Person is FALSE"]
+    E@{ shape: rect}
