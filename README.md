@@ -82,8 +82,19 @@ accelerate launch src/slimface/training/accelerate_train.py
 For additional help, you can refer to the [Training Documentation](./docs/training/training_docs.md) for more details.
 
 ### Inference
+#### Create Reference Image Data at `data/reference_data`
+For each class, you store an image in `data/reference_data` folder which are maped with `index_to_class_mapping.json`.
+
+The structure like:
+```markdown
+data/reference_data/
+├── 'Robert Downey Jr.jpg'
+├── 'Tom Cruise.jpg'
+└── ...
+```
+
 #### Create Reference Dictionary From `index_to_class_mapping.json`
-> **Note**: You must locate `index_to_class_mapping.json` to `ckpts` folder and run code (1). Or use code (2) if you wnat to custom paths.
+> **Note**: You must locate `index_to_class_mapping.json` to `ckpts` folder and run code (1). Or use code (2) if you wnat to custom paths. You have to locate reference images in `data/reference_data`, if not the vale of relative class in `reference_image_data.json` will be set `""`.
 - Code (1)
 ```bash
 python  scripts/reate_reference_image_path.py
@@ -95,6 +106,7 @@ python scripts/reate_reference_image_path.py \
     --output <your_tests/reference_image_data.json>
 ```
 The `reference_image_data.json` will locate in `tests` folder.
+
 
 ## Demostration
 ```bash

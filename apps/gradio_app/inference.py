@@ -16,7 +16,6 @@ def run_inference(image, reference_dict_path, index_to_class_mapping_path, model
     # Create args object to mimic command-line arguments
     class Args:
         def __init__(self):
-            # Handle both string paths and file objects
             self.unknown_image_path = temp_image_path
             self.reference_dict_path = reference_dict_path.name if hasattr(reference_dict_path, 'name') else reference_dict_path
             self.index_to_class_mapping_path = index_to_class_mapping_path.name if hasattr(index_to_class_mapping_path, 'name') else index_to_class_mapping_path
@@ -43,8 +42,12 @@ def run_inference(image, reference_dict_path, index_to_class_mapping_path, model
             output += f"Image: {result['image_path']}\n"
             output += f"Predicted Class: {result['predicted_class']}\n"
             output += f"Confidence: {result['confidence']:.4f}\n"
-            output += f"Similarity: {result.get('similarity', 'N/A'):.4f}\n"
-            output += f"Confirmed: {result.get('confirmed', 'N/A')}\n\n"
+            # Handle None or missing similarity
+            similarity = result.get('similarity', 'N/A')
+            output += f"Similarity: {similarity if similarity != 'N/A' else 'N/A'}{' (N/A)' if similarity is None else ''}\n"
+            # Handle None or missing confirmed
+            confirmed = result.get('confirmed', 'N/A')
+            output += f"Confirmed: {confirmed}\n\n"
         
         return output
     
