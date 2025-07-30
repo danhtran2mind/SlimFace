@@ -4,13 +4,17 @@ from PIL import Image
 
 # Append the path to the inference script's directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'slimface', 'inference')))
+
 from end2end_inference import inference_and_confirm
 
 def run_inference(image, reference_dict_path, index_to_class_mapping_path, model_path,
                  edgeface_model_path="ckpts/idiap/edgeface_base.pt", 
                  algorithm="yolo", accelerator="auto", resolution=224, similarity_threshold=0.6):
-    # Save uploaded image temporarily in apps/gradio_app/
-    temp_image_path = os.path.join(os.path.dirname(__file__), "temp_image.jpg")
+    
+    # Define temporary image path
+    temp_image_path = os.path.join(os.path.dirname(__file__), "temp_data", "temp_image.jpg")
+    os.makedirs(os.path.dirname(temp_image_path), exist_ok=True)
+    # Save the image
     image.save(temp_image_path)
 
     # Create args object to mimic command-line arguments
