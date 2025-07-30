@@ -2,7 +2,7 @@
 
 > ## Credits and Citation
 >
-> ℹ️ This project is based on the [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), and includes our own bug fixes and enhancements.
+> ℹ️ This project leverages code from [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), with our own bug fixes and enhancements available at [![Edgeface Enhancements](https://img.shields.io/badge/GitHub-danhtran2mind%2Fedgeface-blue?style=flat&logo=github)](https://github.com/danhtran2mind/edgeface/tree/main/face_alignment).
 >
 > If this project is helpful for your research, please consider citing the original paper:
 >
