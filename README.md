@@ -212,7 +212,7 @@ SlimFace requires the following environment:
 
 ## More Knowledge
 
-For additional information on models and pre-trained weights, please refer to the following resources: ![PyTorch Documentation](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat).
+For additional information on models and pre-trained weights, please refer to the following resources: [![PyTorch Documentation](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat)](https://docs.pytorch.org/vision/main/models.html)
 
 The Documentation includes the `torchvision.models` subpackage, which offers pre-trained models for various image tasks. It provides metrics like Acc@1, Acc@5, Params, and GFLOPS for model evaluation.
 
