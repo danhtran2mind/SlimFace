@@ -2,10 +2,14 @@ import gradio as gr
 from PIL import Image
 from gradio_app.inference import run_inference
 from gradio_app.components import (
-    CONTENT_DESCRIPTION, CONTENT_IN, CONTENT_OUT,
+    CONTENT_DESCRIPTION, CONTENT_OUTTRO,
+    CONTENT_IN_1, CONTENT_IN_2,
+    CONTENT_OUT_1, CONTENT_OUT_2,
     list_reference_files, list_mapping_files,
     list_classifier_files, list_edgeface_files
 )
+from glob import glob
+import os
 
 def create_image_io_row():
     """Create the row for image input and output display."""
@@ -77,11 +81,39 @@ def create_interface():
     with gr.Blocks(css=CSS, theme=gr.themes.Soft()) as demo:
         gr.Markdown("# SlimFace Demonstration")
         gr.Markdown(CONTENT_DESCRIPTION)
-        gr.HTML(CONTENT_IN)
-        
+        gr.Markdown(CONTENT_IN_1)
+        gr.HTML(CONTENT_IN_2)
+
         image_input, output = create_image_io_row()
         ref_dict, index_map, classifier_model, edgeface_model, algorithm, accelerator, resolution, similarity_threshold = create_model_settings_row()
         
+        # Add example image gallery as a table
+        with gr.Group():
+            gr.Markdown("### Example Images")
+            example_images = glob("apps/assets/examples/*.[jp][pn][gf]")
+            if example_images:
+                # Create a list of dictionaries for the table
+                table_data = []
+                for img_path in example_images:
+                    table_data.append({
+                        "Image": img_path,  # Will be rendered as an image
+                        "Action": f"Use {os.path.basename(img_path)}"  # Button text
+                    })
+                
+                # Create a table with images and buttons
+                gr.Dataframe(
+                    value=table_data,
+                    headers=["Image", "Action"],
+                    datatype=["image", "str"],
+                    interactive=False,
+                    elem_classes=["example-table"],
+                    # Add click event for buttons
+                    row_click=lambda row: Image.open(row["Image"]),
+                    outputs=image_input
+                )
+            else:
+                gr.Markdown("No example images found in apps/assets/examples/")
+
         with gr.Row():
             submit_btn = gr.Button("Run Inference", variant="primary", elem_classes=["centered-button"])
         
@@ -100,7 +132,9 @@ def create_interface():
             ],
             outputs=output
         )
-        gr.Markdown(CONTENT_OUT)
+        gr.Markdown(CONTENT_OUTTRO)
+        gr.HTML(CONTENT_OUT_1)
+        gr.Markdown(CONTENT_OUT_2)
     return demo
 
 def main():
