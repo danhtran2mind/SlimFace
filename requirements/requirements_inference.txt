@@ -13,3 +13,4 @@ scikit-learn
 pillow
 requests
 huggingface-hub>=0.31.1
+gradio

@@ -109,9 +109,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perform inference with a trained face classification model.')
     parser.add_argument('--input_path', type=str, required=True,
                         help='Path to an image or directory of images for inference.')
-    parser.add_argument('--index_to_class_mapping_path', type=str, required=True,
+    parser.add_argument('--index_to_class_mapping_path', type=str,
+                        default='ckpts/index_to_class_mapping.json',
                         help='Path to the JSON file containing index to class mapping.')
-    parser.add_argument('--model_path', type=str, required=True,
+    parser.add_argument('--model_path', type=str,
+                        default='ckpts/SlimFace_efficientnet_b3_full_model.pth',
                         help='Path to the trained full model in TorchScript format (.pth file).')
     parser.add_argument('--algorithm', type=str, default='yolo',
                         choices=['mtcnn', 'yolo'],
