@@ -154,11 +154,11 @@ accelerate config default
 accelerate launch src/slimface/training/accelerate_train.py
 ```
 
-For detailed instructions, refer to the [Training Documentation](./docs/training/training_docs.md).
+For detailed instructions, refer to the [Training Documentation](./docs/training/training_doc.md).
 
 ### Training Hyperparameters
 
-Default hyperparameters are optimized for performance and can be customized in `src/slimface/training/accelerate_train.py`. Refer to the [Training Documentation](./docs/training/training_docs.md) for guidance.
+Default hyperparameters are optimized for performance and can be customized in `src/slimface/training/accelerate_train.py`. Refer to the [Training Documentation](./docs/training/training_doc.md) for guidance.
 
 ## Inference
 
