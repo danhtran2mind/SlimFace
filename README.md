@@ -20,7 +20,10 @@
 > }
 > ```
 
-
+## Introduction
+SlimFace👦 empowers developers to build high-accuracy face classification models by leveraging TorchVision's powerful pre-trained architectures through a transfer learning approach. 🌟🚀 It provides a flexible, efficient, and scalable solution for facial recognition, supporting training on custom datasets and inference to deliver top-tier performance for custom applications. 😎📸
+## SlimFace Inference Pipeline
+![SlimFace Inference Pipeline](assets/slimface_inference_pipeline.svg)
 ## Usage
 ### Clone Repositories
 ```bash
