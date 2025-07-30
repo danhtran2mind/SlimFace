@@ -1,7 +1,11 @@
 import gradio as gr
 from PIL import Image
 from gradio_app.inference import run_inference
-from gradio_app.components import CONTENT_MD, list_reference_files, list_mapping_files, list_classifier_files, list_edgeface_files
+from gradio_app.components import (
+    CONTENT_DESCRIPTION, CONTENT_IN, CONTENT_OUT,
+     list_reference_files, list_mapping_files,
+      list_classifier_files, list_edgeface_files
+)
 
 def create_image_input_column():
     """Create the column for image input and output display."""
@@ -72,7 +76,8 @@ def create_interface():
     """Create the Gradio interface for SlimFace."""
     with gr.Blocks(css="gradio_app/static/styles.css", theme=gr.themes.Soft()) as demo:
         gr.Markdown("# SlimFace Demonstration")
-        gr.Markdown(CONTENT_MD)
+        gr.Markdown(CONTENT_DESCRIPTION)
+        gr.HTML(CONTENT_IN)
         
         with gr.Row():
             image_input, output = create_image_input_column()
@@ -99,6 +104,7 @@ def create_interface():
             ],
             outputs=output
         )
+        gr.Markdown(CONTENT_OUT)
     return demo
 
 def main():

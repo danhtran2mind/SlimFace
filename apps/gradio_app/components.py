@@ -41,23 +41,95 @@ def list_edgeface_files():
     except Exception as e:
         return [f"Error listing files: {str(e)}"]
 
-CONTENT_MD = """
-**SlimFace: Advanced Face Classification with TorchVision Backbones** 
-*Source:* [GitHub Repo](https://img.shields.io/badge/GitHub-danhtran2mind%2FSlimFace-blue?style=flat)](https://github.com/danhtran2mind/SlimFace)  
-*Author:* [![GitHub Profile](https://img.shields.io/badge/GitHub-danhtran2mind-blue?style=flat)](https://github.com/danhtran2mind)  
-[![PyTorch Docs](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat)](https://docs.pytorch.org/vision/main/models.html)  
+CONTENT_DESCRIPTION = """
+**SlimFace: Advanced Face Classification with TorchVision Backbones**
+"""
+CONTENT_IN = """
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0; /* Remove default margin for full-width */
+        padding: 20px; /* Adjust padding for content spacing */
+        color: #333;
+        width: 100%; /* Ensure body takes full width */
+        box-sizing: border-box; /* Include padding in width calculation */
+    }
+    .attribution {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .quote-container {
+        border-left: 5px solid #007bff;
+        padding-left: 15px;
+        margin-bottom: 15px;
+        font-style: italic;
+    }
+    .attribution p {
+        margin: 10px 0;
+    }
+    .badge {
+        display: inline-block;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .badge:hover {
+        background-color: #0056b3;
+    }
+    .badge img {
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+    .source {
+        color: #555;
+    }
+</style>
+    <div class="quote-container">
+        <p>
+            This project leverages code from 
+            <a class="badge" href="https://github.com/otroshi/edgeface">
+                <img src="https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github" alt="Built on edgeface">
+            </a>
+            by 
+            <a class="badge" href="https://github.com/otroshi">
+                <img src="https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github" alt="Hatef Otroshi">
+            </a>, 
+            with our own bug fixes and enhancements available at 
+            <a class="badge" href="https://github.com/danhtran2mind/edgeface/tree/main/face_alignment">
+                <img src="https://img.shields.io/badge/GitHub-danhtran2mind%2Fedgeface-blue?style=flat&logo=github" alt="Edgeface Enhancements">
+            </a>.
+        </p>
+    </div>
+    <p class="source">
+        For more information, you can follow below:<br>
+        Source code: 
+        <a class="badge" href="https://github.com/danhtran2mind/SlimFace">
+            <img src="https://img.shields.io/badge/GitHub-danhtran2mind%2FSlimFace-blue?style=flat" alt="GitHub Repo">
+            ,
+        </a>
+        Author: 
+        <a class="badge" href="https://github.com/danhtran2mind">
+            <img src="https://img.shields.io/badge/GitHub-danhtran2mind-blue?style=flat" alt="GitHub Profile">
+            ,
+        </a>
+        PyTorch Docs: 
+        <a class="badge" href="https://docs.pytorch.org/vision/main/models.html">
+            <img src="https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat" alt="PyTorch Docs">
+        </a>
+    </p>
+"""
 
-SlimFace is a cutting-edge project leveraging transfer learning to build high-performance face classification models from custom datasets. 🚀 Powered by TorchVision's pre-trained models, it integrates state-of-the-art architectures for robust and scalable facial recognition solutions.  
+CONTENT_OUT = """
+## More Information about SlimFace
+
+SlimFace empowers developers to build high-accuracy face classification models using transfer learning, leveraging TorchVision's powerful pre-trained architectures. 🌟 It provides a flexible, efficient, and scalable solution for facial recognition, delivering top-tier performance for custom applications.
 
 **Supported Architectures:**  
-- **EfficientNet**: B0-B7, V2 (S, M, L) for optimized performance. 🖼️  
-- **RegNet**: X/Y series (400MF to 128GF) for computational efficiency. ⚡  
-- **Vision Transformers (ViT)**: B_16, B_32, H_14, L_16, L_32 for superior feature extraction. 🌟  
-
-**Key Features from TorchVision:**  
-- **Classification**: Access pre-trained weights (e.g., `ResNet50_Weights.DEFAULT`) via `torch.hub`. Preprocess with `weights.transforms()` for optimal results. 🧠  
-- **Extensibility**: Supports tasks like semantic segmentation (FCN, DeepLabV3), object detection (Faster R-CNN), and video classification (R3D, Swin3D). 🎥  
-- **Quantized Models**: INT8 support for efficient deployment (e.g., MobileNet_V3). 🔍  
-
-Explore SlimFace for seamless integration of advanced face classification into real-world applications, and dive into [PyTorch Docs](https://docs.pytorch.org/vision/main/models.html) for more on TorchVision's capabilities! 🌐  
+- **EfficientNet**: B0-B7 and V2 (Small, Medium, Large) for balanced performance and efficiency. 📸  
+- **RegNet**: X/Y series (400MF to 128GF) for optimized computation across diverse hardware. 💻  
+- **Vision Transformers (ViT)**: B_16, B_32, H_14, L_16, L_32 for cutting-edge feature extraction. 🚀  
 """
