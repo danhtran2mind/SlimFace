@@ -16,7 +16,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## Table of Contents
-
+- [Credits and Citation](#credits-and-citation)
 - [Introduction](#introduction)
 - [Key Features](#key-features)
 - [Installation](#installation)
@@ -37,6 +37,26 @@
 - [Environment](#environment)
 - [Credits and Citation](#credits-and-citation)
 - [Contact](#contact)
+
+## Credits and Citation
+>
+> ℹ️ This project leverages code from [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), with our own bug fixes and enhancements available at [![Edgeface Enhancements](https://img.shields.io/badge/GitHub-danhtran2mind%2Fedgeface-blue?style=flat&logo=github)](https://github.com/danhtran2mind/edgeface/tree/main/face_alignment).
+>
+> If this project is helpful for your research, please consider citing the original paper:
+>
+> **Edgeface: Efficient face recognition model for edge devices**  
+> *George, Anjith and Ecabert, Christophe and Shahreza, Hatef Otroshi and Kotwal, Ketan and Marcel, Sebastien*  
+> *IEEE Transactions on Biometrics, Behavior, and Identity Science (2024)*
+>
+> **If you use this work in your research, please cite the original paper:**
+> ```bibtex
+> @article{edgeface,
+>   title={Edgeface: Efficient face recognition model for edge devices},
+>   author={George, Anjith and Ecabert, Christophe and Shahreza, Hatef Otroshi and Kotwal, Ketan and Marcel, Sebastien},
+>   journal={IEEE Transactions on Biometrics, Behavior, and Identity Science},
+>   year={2024}
+> }
+> ```
 
 ## Introduction
 
