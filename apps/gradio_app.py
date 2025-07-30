@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 def create_gradio_interface():
     def update_reference_input(choice):
         if choice == "Use Existing":
-            return gr.Textbox(label="Reference Dict JSON File Path", value="tests/reference_image_data.json", visible=True), gr.File(label="Upload Reference Dict JSON File", visible=False)
+            return gr.Textbox(label="Reference Dict JSON File Path", value="data/reference_data/reference_image_data.json", visible=True), gr.File(label="Upload Reference Dict JSON File", visible=False)
         else:
             return gr.Textbox(visible=False), gr.File(label="Upload Reference Dict JSON File", visible=True)
 
@@ -45,7 +45,7 @@ def create_gradio_interface():
 
         with gr.Row():
             ref_choice = gr.Dropdown(choices=["Use Existing", "Upload New"], label="Reference Dict JSON File", value="Use Existing")
-            ref_file = gr.Textbox(label="Reference Dict JSON File Path", value="tests/reference_image_data.json", visible=True)
+            ref_file = gr.Textbox(label="Reference Dict JSON File Path", value="data/reference_data/reference_image_data.json", visible=True)
             ref_upload = gr.File(label="Upload Reference Dict JSON File", visible=False)
         ref_choice.change(fn=update_reference_input, inputs=ref_choice, outputs=[ref_file, ref_upload])
 
