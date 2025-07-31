@@ -5,13 +5,9 @@
 
 [![huggingface-hub](https://img.shields.io/badge/huggingface--hub-blue.svg?logo=huggingface)](https://huggingface.co/docs/hub)
 [![accelerate](https://img.shields.io/badge/accelerate-blue.svg?logo=pytorch)](https://huggingface.co/docs/accelerate)
-[![bitsandbytes](https://img.shields.io/badge/bitsandbytes-blue.svg)](https://github.com/TimDettmers/bitsandbytes)
 [![torch](https://img.shields.io/badge/torch-blue.svg?logo=pytorch)](https://pytorch.org/)
-[![Pillow](https://img.shields.io/badge/Pillow-blue.svg)](https://pypi.org/project/pillow/)
-[![numpy](https://img.shields.io/badge/numpy-blue.svg?logo=numpy)](https://numpy.org/)
 [![transformers](https://img.shields.io/badge/transformers-blue.svg?logo=huggingface)](https://huggingface.co/docs/transformers)
 [![torchvision](https://img.shields.io/badge/torchvision-blue.svg?logo=pytorch)](https://pytorch.org/vision/stable/index.html)
-[![diffusers](https://img.shields.io/badge/diffusers-blue.svg?logo=huggingface)](https://huggingface.co/docs/diffusers)
 [![gradio](https://img.shields.io/badge/gradio-blue.svg?logo=gradio)](https://gradio.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -29,7 +25,7 @@
 
 ## Credits and Citation
 >
-> ℹ️ This project leverages code from [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), with our own bug fixes and enhancements available at [![Edgeface Enhancements](https://img.shields.io/badge/GitHub-danhtran2mind%2Fedgeface-blue?style=flat&logo=github)](https://github.com/danhtran2mind/edgeface/tree/main/face_alignment).
+> ℹ️ This project leverages code from [![Built on edgeface](https://img.shields.io/badge/Built%20on-otroshi%2Fedgeface-blue?style=flat&logo=github)](https://github.com/otroshi/edgeface) by [![Hatef Otroshi](https://img.shields.io/badge/GitHub-Hatef_Otroshi-blue?style=flat&logo=github)](https://github.com/otroshi), with our own bug fixes and enhancements available at [![Edgeface Enhancements](https://img.shields.io/badge/GitHub-danhtran2mind%2Fedgeface-blue?style=flat&logo=github)](https://github.com/danhtran2mind/edgeface/tree/main/face_alignment). Explore additional EdgeFace models on the Hugging Face Hub: [![Idiap HuggingFace](https://img.shields.io/badge/HuggingFace-Idiap-yellow?style=flat&logo=huggingface)](https://huggingface.co/Idiap).
 >
 > If this project is helpful for your research, please consider citing the original paper:
 >
@@ -178,6 +174,10 @@ python src/slimface/inference/end2end_inference.py \
 
 ### Additional Arguments
 For more details and available options, refer to the [Inference Documentation](docs/inference/inference_doc.md).
+
+## Metrics
+Model Evaluation Results: Table summarizing train/validation loss and accuracy for four models.
+For details you can see at [Models Metric](./docs/evaluation/comparision.md).
 
 ## Demonstration
 

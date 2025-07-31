@@ -1,14 +1,7 @@
 
 # Training Documentation
 
-This document outlines the command-line arguments and a concise overview of the training pipeline for a face classification model using PyTorch Lightning.
-
-## Table of Contents
-
--   Arguments Table
-    
--   Training Pipeline Overview
-    
+This document outlines the command-line arguments and a concise overview of the training pipeline for a face classification model using PyTorch Lightning.   
 
 # Training Arguments Documentation
 
@@ -18,6 +11,7 @@ This document outlines the command-line arguments and a concise overview of the 
 
 - [Arguments Table](#arguments-table)
 - [Training Pipeline Overview](#training-pipeline-overview)
+- [Supported Training Architectures](#supported-training-architectures)
 
 ## Arguments Table
 
@@ -46,3 +40,8 @@ The training pipeline preprocesses face images, fine-tunes a classification head
 4. **Training**: `FaceClassifierLightning` manages training with Adam optimizer, cosine annealing scheduler, and logs loss/accuracy.
 5. **Configuration**: Loads model details from YAML (`load_model_configs`), uses `DataLoader` with multiprocessing, and saves models via `CustomModelCheckpoint`.
 6. **Execution**: `main` orchestrates preprocessing, data loading, model training, and saves full model and classifier head.
+
+## Supported Training Architectures
+- **EfficientNet**: B0-B7 and V2 (Small, Medium, Large) for balanced performance and efficiency. 📸  
+- **RegNet**: X/Y series (400MF to 128GF) for optimized computation across diverse hardware. 💻  
+- **Vision Transformers (ViT)**: B_16, B_32, H_14, L_16, L_32 for cutting-edge feature extraction. 🚀  
