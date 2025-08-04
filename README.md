@@ -184,8 +184,7 @@ For details you can see at [Models Metric](./docs/evaluation/comparision.md).
 ### Interactive Demo
 
 Explore the interactive demo hosted on HuggingFace:
-
-[![HuggingFace Space](https://img.shields.io/badge/HuggingFace_Space-blue.svg?logo=huggingface)](https://huggingface.co/spaces/danhtran2mind/SlimFace-demo)
+[![HuggingFace Space Demo](https://img.shields.io/badge/HuggingFace-danhtran2mind%2FSlimFace--demo-yellow?style=flat&logo=huggingface)](https://huggingface.co/spaces/danhtran2mind/SlimFace-demo)
 
 Below is a screenshot of the SlimFace Demo GUI:
 
