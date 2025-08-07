@@ -44,7 +44,7 @@ SlimFace is a robust and efficient framework for face recognition, designed to e
 - **Gradio Demo**: Provides an interactive interface for easy model inference and testing.
 
 ## Datasets
-You can explore more in this HuggingFace Dataset available at the given link for further details: [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-vasukipatel%2Fface--recognition--dataset-blue?style=flat&logo=kaggle)](https://www.kaggle.com/datasets/vasukipatel/face-recognition-dataset).
+You can explore more in this Kaggle Dataset available at the given link for further details: [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-vasukipatel%2Fface--recognition--dataset-blue?style=flat&logo=kaggle)](https://www.kaggle.com/datasets/vasukipatel/face-recognition-dataset).
 
 The dataset preparation script is located at `scripts/process_dataset.py`.
 ## Base Model
