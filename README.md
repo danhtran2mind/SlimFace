@@ -11,17 +11,6 @@
 [![gradio](https://img.shields.io/badge/gradio-blue.svg?logo=gradio)](https://gradio.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## Table of Contents
-- [Credits and Citation](#credits-and-citation)
-- [Introduction](#introduction)
-- [Key Features](#key-features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Demonstration](#demonstration)
-- [Metrics](#metrics)
-- [Environment](#environment)
-- [Credits and Citation](#credits-and-citation)
-- [Contact](#contact)
 
 ## Credits and Citation
 >
@@ -53,6 +42,35 @@ SlimFace is a robust and efficient framework for face recognition, designed to e
 - **Efficient Pipeline**: Optimized for edge devices to ensure low computational requirements.
 - **Flexible Training**: Supports custom datasets, enabling tailored face recognition solutions.
 - **Gradio Demo**: Provides an interactive interface for easy model inference and testing.
+
+## Datasets
+You can explore more in this HuggingFace Dataset available at the given link for further details: [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-vasukipatel%2Fface--recognition--dataset-blue?style=flat&logo=kaggle)](https://www.kaggle.com/datasets/vasukipatel/face-recognition-dataset).
+
+The dataset preparation script is located at `scripts/process_dataset.py`.
+## Base Model
+
+SlimFace leverages pre-trained TorchVision models fine-tuned for face recognition. Follow this `scripts/download_ckpts.py` to download model checkpoints.
+
+For more details on Base Models, refer to the PyTorch Pretrained Model Documentation: [![PyTorch Documentation](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-orange?style=flat&logo=pytorch)](https://docs.pytorch.org/vision/main/models.html).
+
+## Demonstration
+
+### Interactive Demo
+
+Explore the interactive demo hosted on HuggingFace:
+[![HuggingFace Space Demo](https://img.shields.io/badge/HuggingFace-danhtran2mind%2FSlimFace--demo-yellow?style=flat&logo=huggingface)](https://huggingface.co/spaces/danhtran2mind/SlimFace-demo)
+
+Below is a screenshot of the SlimFace Demo GUI:
+
+<img src="./assets/gradio_app_demo.jpg" alt="SlimFace Demo" height="600">
+
+### Run Locally
+
+To run the Gradio application locally at the default address `localhost:7860`, execute:
+
+```bash
+python apps/gradio_app.py
+```
 
 ## Installation
 
@@ -128,13 +146,6 @@ python scripts/create_reference_image_path.py \
     --output <path_to_reference_image_data.json>
 ```
 
-### Base Model
-
-SlimFace leverages pre-trained TorchVision models fine-tuned for face recognition. Download model checkpoints using:
-
-```bash
-python scripts/download_ckpts.py
-```
 
 ## Training
 
@@ -179,28 +190,8 @@ For more details and available options, refer to the [Inference Documentation](d
 Model Evaluation Results: Table summarizing train/validation loss and accuracy for four models.
 For details you can see at [Models Metric](./docs/evaluation/comparision.md).
 
-## Demonstration
 
-### Interactive Demo
 
-Explore the interactive demo hosted on HuggingFace:
-[![HuggingFace Space Demo](https://img.shields.io/badge/HuggingFace-danhtran2mind%2FSlimFace--demo-yellow?style=flat&logo=huggingface)](https://huggingface.co/spaces/danhtran2mind/SlimFace-demo)
-
-Below is a screenshot of the SlimFace Demo GUI:
-
-<img src="./assets/gradio_app_demo.jpg" alt="SlimFace Demo" height="600">
-
-### Run Locally
-
-To run the Gradio application locally at the default address `localhost:7860`, execute:
-
-```bash
-python apps/gradio_app.py
-```
-
-## Metrics
-
-Evaluate model performance using standard metrics such as accuracy and F1-score. Detailed evaluation procedures are available in the [Training Documentation](./docs/training/training_docs.md).
 
 ## Environment
 
@@ -211,7 +202,7 @@ SlimFace requires the following environment:
 
 ## More Knowledge
 
-For additional information on models and pre-trained weights, please refer to the following resources: [![PyTorch Documentation](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat)](https://docs.pytorch.org/vision/main/models.html)
+For additional information on models and pre-trained weights, please refer to the following resources: [![PyTorch Documentation](https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-orange?style=flat&logo=pytorch)](https://docs.pytorch.org/vision/main/models.html)
 
 The Documentation includes the `torchvision.models` subpackage, which offers pre-trained models for various image tasks. It provides metrics like Acc@1, Acc@5, Params, and GFLOPS for model evaluation.
 
