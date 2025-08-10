@@ -1,13 +1,17 @@
 import gradio as gr
 from PIL import Image
 from gradio_app.inference import run_inference
-from gradio_app.components import (
-    CONTENT_DESCRIPTION, CONTENT_OUTTRO,
-    CONTENT_IN_1, CONTENT_IN_2,
-    CONTENT_OUT_1, CONTENT_OUT_2,
+from gradio_app.components import (    
     list_reference_files, list_mapping_files,
     list_classifier_files, list_edgeface_files
 )
+
+from gradio_app.project_info import (
+    CONTENT_DESCRIPTION, CONTENT_OUTTRO,
+    CONTENT_IN_1, CONTENT_IN_2,
+    CONTENT_OUT_1, CONTENT_OUT_2
+)
+
 from glob import glob
 import os
 
