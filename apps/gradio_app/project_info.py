@@ -10,15 +10,15 @@ CONTENT_IN_2 = """
     For more information, you can follow below:<br>
     Source code: 
     <a class="badge" href="https://github.com/danhtran2mind/SlimFace">
-        <img src="https://img.shields.io/badge/GitHub-danhtran2mind%2FSlimFace-blue?style=flat" alt="GitHub Repo">
+        <img src="https://img.shields.io/badge/GitHub-danhtran2mind%2FSlimFace-blue?style=flat?logo=github" alt="GitHub Repo">
     </a>,
     Author: 
     <a class="badge" href="https://github.com/danhtran2mind">
-        <img src="https://img.shields.io/badge/GitHub-danhtran2mind-blue?style=flat" alt="GitHub Profile">
+        <img src="https://img.shields.io/badge/GitHub-danhtran2mind-blue?style=flat?logo=github" alt="GitHub Profile">
     </a>,
     PyTorch Docs: 
     <a class="badge" href="https://docs.pytorch.org/vision/main/models.html">
-        <img src="https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-blue?style=flat" alt="PyTorch Docs">
+        <img src="https://img.shields.io/badge/PyTorch-Pretrain%20Model%20Docs-orange?style=flat?logo=pytorch" alt="PyTorch Docs">
     </a>
 </p>
 """
